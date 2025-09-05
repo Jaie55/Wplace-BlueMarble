@@ -504,14 +504,15 @@ function buildOverlayMain() {
           (instance, button) => {
             button.onclick = () => {
               const coords = instance.apiManager?.coordsTilePixel; // Retrieves the coords from the API manager
-              if (!coords?.[0]) {
+              // Accept 0 as a valid coordinate. Ensure coords is an array with at least 4 defined entries.
+              if (!Array.isArray(coords) || coords.length < 4 || typeof coords[0] === 'undefined' || typeof coords[1] === 'undefined' || typeof coords[2] === 'undefined' || typeof coords[3] === 'undefined') {
                 instance.handleDisplayError('Coordinates are malformed! Did you try clicking on the canvas first?');
                 return;
               }
-              instance.updateInnerHTML('bm-input-tx', coords?.[0] || '');
-              instance.updateInnerHTML('bm-input-ty', coords?.[1] || '');
-              instance.updateInnerHTML('bm-input-px', coords?.[2] || '');
-              instance.updateInnerHTML('bm-input-py', coords?.[3] || '');
+              instance.updateInnerHTML('bm-input-tx', (coords[0] ?? ''));
+              instance.updateInnerHTML('bm-input-ty', (coords[1] ?? ''));
+              instance.updateInnerHTML('bm-input-px', (coords[2] ?? ''));
+              instance.updateInnerHTML('bm-input-py', (coords[3] ?? ''));
               persistCoords();
             }
           }
@@ -819,7 +820,13 @@ setTimeout(() => { try { createTemplateEditModal(); } catch (_) {} }, 200);
     if (!listContainer) { return; }
     listContainer.innerHTML = '';
     const templates = templateManager.templatesArray || [];
-    if (!templates.length) { listContainer.style.display = 'none'; return; }
+    if (!templates.length) {
+      listContainer.style.display = 'none';
+      // update counter
+      const indicator = document.querySelector('#bm-templates-indicator');
+      if (indicator) { indicator.textContent = `Plantillas: 0 (0 activas)`; }
+      return;
+    }
     listContainer.style.display = '';
 
   // Build expanded template list (shows all templates and controls)
@@ -970,6 +977,15 @@ setTimeout(() => { try { createTemplateEditModal(); } catch (_) {} }, 200);
 
       listContainer.appendChild(row);
     });
+    // Update template counter after building the list
+    try {
+      const indicator = document.querySelector('#bm-templates-indicator');
+      if (indicator) {
+        const total = templates.length;
+        const active = templates.filter(x => x && x.enabled !== false).length;
+        indicator.textContent = `Plantillas: ${total} (${active} activas)`;
+      }
+    } catch (_) {}
   };
 
   // Listen for template list rebuild event
