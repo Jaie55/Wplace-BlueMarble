@@ -17,7 +17,7 @@
 // @grant        GM_getValue
 // @grant        GM_xmlhttpRequest
 // @connect      telemetry.thebluecorner.net
-// @resource     CSS-BM-File https://raw.githubusercontent.com/Jaie55/Wplace-BlueMarble/051271c433a42db968a865b00f81bb979ee7d13f/dist/BlueMarble.user.css
+// @resource     CSS-BM-File https://raw.githubusercontent.com/Jaie55/Wplace-BlueMarble/main/dist/BlueMarble.user.css
 // ==/UserScript==
 
 // Wplace  --> https://wplace.live
