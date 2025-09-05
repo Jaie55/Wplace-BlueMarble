@@ -482,3 +482,61 @@ div:has(> #bm-input-file-template) > button, #bm-a > button {
   overflow: hidden !important;
   text-overflow: ellipsis !important;
 }
+
+/* === FINAL OVERRIDES (highest specificity) === */
+html body #bm-overlay #bm-contain-coords,
+html body div#bm-overlay #bm-contain-coords,
+html body #bm-contain-coords {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 0.5ch !important;
+}
+
+/* Force coordinate items inline and small */
+html body #bm-contain-coords > * {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 2.6ch !important;
+  padding: 0.15em 0.5ch !important;
+  margin: 0 0.25ch !important;
+  border-radius: 8px !important;
+  background: rgba(255,255,255,0.03) !important;
+  color: var(--bm-foreground) !important;
+}
+
+/* Remove any leftover inset accent, make template buttons full border accent */
+html body #bm-overlay button,
+html body #bm-overlay-telemetry button,
+html body button#bm-button-enable,
+html body button#bm-button-create,
+html body button#bm-button-disable,
+html body div:has(> #bm-input-file-template) > button,
+html body #bm-a > button {
+  box-shadow: none !important;
+  border-left: none !important;
+  border: 2px solid var(--bm-accent) !important;
+  background: linear-gradient(180deg, rgba(0,0,0,0.12), rgba(0,0,0,0.06)) !important;
+  color: #fff !important;
+}
+
+/* Ensure the pin icon does not create a large bubble */
+html body #bm-button-coords svg {
+  width: 1.0em !important;
+  height: 1.0em !important;
+}
+
+/* Ensure upload and template buttons stretch full width */
+html body #bm-contain-buttons-template button,
+html body div:has(> #bm-input-file-template) > button {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* High-contrast focus outline for accessibility */
+html body #bm-overlay button:focus {
+  outline: 2px solid rgba(250,78,73,0.9) !important;
+  outline-offset: 2px !important;
+}
