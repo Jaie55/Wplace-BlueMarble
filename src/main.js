@@ -491,44 +491,60 @@ function buildOverlayTabTemplate() {
   .buildOverlay();
 }
 
-// Minimal runtime initialization: create overlay, templateManager and apiManager
-// This ensures the UI is actually constructed when the userscript runs.
-let overlayMain;
-let templateManager;
-let apiManager;
+// Imports the CSS file from dist folder on github
+const cssOverlay = GM_getResourceText("CSS-BM-File");
+GM_addStyle(cssOverlay);
 
-function initializeMinimalUI() {
-  try {
-    // Create primary overlay instance
-    overlayMain = new Overlay(name, version);
+// Imports the Roboto Mono font family
+var stylesheetLink = document.createElement('link');
+stylesheetLink.href = 'https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap';
+stylesheetLink.rel = 'preload';
+stylesheetLink.as = 'style';
+stylesheetLink.onload = function () {
+  this.onload = null;
+  this.rel = 'stylesheet';
+};
+document.head?.appendChild(stylesheetLink);
 
-    // Build a small visible container so users see the UI
-    overlayMain
-      .addDiv({ id: 'bm-overlay', style: 'position: fixed; top: 10px; right: 10px; z-index: 99999; background: rgba(0,0,0,0.6); color: white; padding: 8px; border-radius: 6px; max-width: 320px;' })
-        .addDiv({ id: 'bm-contain-header', style: 'display:flex; align-items:center; gap:8px;' })
-          .addHeader(3, { textContent: name }).buildElement()
-        .buildElement()
-        .addDiv({ id: 'bm-contain-body', style: 'margin-top:6px; font-size:13px;' })
-          .addP({ textContent: 'Black Marble UI inicializado.' }).buildElement()
-        .buildElement()
-      .buildElement()
-    .buildOverlay(document.body);
+// CONSTRUCTORS
+const observers = new Observers(); // Constructs a new Observers object
+const overlayMain = new Overlay(name, version); // Constructs a new Overlay object for the main overlay
+const overlayTabTemplate = new Overlay(name, version); // Constructs a Overlay object for the template tab
+const templateManager = new TemplateManager(name, version, overlayMain); // Constructs a new TemplateManager object
+const apiManager = new ApiManager(templateManager); // Constructs a new ApiManager object
 
-    // Create managers and wire them
-    templateManager = new TemplateManager(name, version, overlayMain);
-    apiManager = new ApiManager(templateManager);
-    overlayMain.setApiManager(apiManager);
+overlayMain.setApiManager(apiManager); // Sets the API manager
 
-    // Expose to window for any inline code expecting globals
-    window.overlayMain = overlayMain;
-    window.templateManager = templateManager;
-    window.apiManager = apiManager;
+const storageTemplates = JSON.parse(GM_getValue('bmTemplates', '{}'));
+console.log(storageTemplates);
+templateManager.importJSON(storageTemplates); // Loads the templates
 
-    console.log(`${name}: Minimal UI initialized`);
-  } catch (e) {
-    console.error('Failed to initialize minimal UI', e);
-  }
+const userSettings = JSON.parse(GM_getValue('bmUserSettings', '{}')); // Loads the user settings
+console.log(userSettings);
+console.log(Object.keys(userSettings).length);
+if (Object.keys(userSettings).length == 0) {
+  const uuid = crypto.randomUUID(); // Generates a random UUID
+  console.log(uuid);
+  GM.setValue('bmUserSettings', JSON.stringify({
+    'uuid': uuid,
+    'telemetry': 0
+  }));
+}
+setInterval(() => apiManager.sendHeartbeat(version), 1000 * 60 * 30); // Sends a heartbeat every 30 minutes
+
+console.log(`Telemetry is ${!(userSettings?.telemetry == undefined)}`);
+if ((userSettings?.telemetry == undefined) || (userSettings?.telemetry > 1)) { // Increment 1 to retrigger telemetry notice
+  const telemetryOverlay = new Overlay(name, version);
+  telemetryOverlay.setApiManager(apiManager); // Sets the API manager for the telemetry overlay
+  buildTelemetryOverlay(telemetryOverlay); // Notifies the user about telemetry
 }
 
-// Delay initialization slightly to ensure DOM is ready
-setTimeout(initializeMinimalUI, 150);
+buildOverlayMain(); // Builds the main overlay
+
+overlayMain.handleDrag('#bm-overlay', '#bm-bar-drag'); // Creates dragging capability on the drag bar for dragging the overlay
+
+apiManager.spontaneousResponseListener(overlayMain); // Reads spontaneous fetch responces
+
+observeBlack(); // Observes the black palette color
+
+consoleLog(`%c${name}%c (${version}) userscript has loaded!`, 'color: cornflowerblue;', '');
