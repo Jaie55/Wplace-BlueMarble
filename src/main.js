@@ -570,14 +570,26 @@ function buildOverlayMain() {
               instance.handleDisplayStatus('Enabled all colors');
             };
           }).buildElement()
-          .addButton({'id': 'bm-button-colors-top3', 'textContent': 'Mostrar top 3', 'style': 'margin-left: auto;'}, (instance, button) => {
-            // Toggle between showing only top 3 colors and showing all
+          .addButton({'id': 'bm-button-colors-minimize', 'innerHTML': '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="10" width="18" height="4" rx="2" fill="currentColor"/></svg>', 'title': 'Minimizar lista (mostrar 3) - volver a pulsar para ver todo', 'style': 'margin-left: auto;'}, (instance, button) => {
+            // Toggle minimize: show only 3 rows but keep scrollbar for full list
             button.dataset.active = '0';
             button.addEventListener('click', () => {
               const active = button.dataset.active === '1';
               button.dataset.active = active ? '0' : '1';
-              button.textContent = active ? 'Mostrar top 3' : 'Mostrar todo';
-              try { window.buildColorFilterList(); } catch (_) {}
+              // update title to reflect state
+              button.title = active ? 'Minimizar lista (mostrar 3) - volver a pulsar para ver todo' : 'Mostrar lista completa';
+              // find the primary color list container
+              const colorRoot = document.querySelector('#bm-g') || document.querySelector('#bm-colorfilter-list');
+              if (colorRoot) {
+                if (!active) {
+                  // activate minimized: limit height to approx 3 rows, keep scroll
+                  colorRoot.style.maxHeight = '96px';
+                  colorRoot.style.overflowY = 'auto';
+                } else {
+                  colorRoot.style.maxHeight = '';
+                  colorRoot.style.overflowY = '';
+                }
+              }
             });
           }).buildElement()
           .addButton({'id': 'bm-button-colors-disable-all', 'textContent': 'Desactivar todo'}, (instance, button) => {
@@ -599,13 +611,13 @@ function buildOverlayMain() {
       .buildElement()
   .addInputFile({'id': 'bm-input-file-template', 'textContent': 'Subir plantilla', 'accept': 'image/png, image/jpeg, image/webp, image/bmp, image/gif'}).buildElement()
       .addDiv({'id': 'bm-contain-buttons-template'})
-  .addButton({'id': 'bm-button-enable', 'textContent': 'Mostrar plantilla'}, (instance, button) => {
+  .addButton({'id': 'bm-button-enable', 'innerHTML': '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 5v14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>', 'title': 'Mostrar plantilla (activar)'} , (instance, button) => {
           button.onclick = () => {
             instance.apiManager?.templateManager?.setTemplatesShouldBeDrawn(true);
             instance.handleDisplayStatus(`Plantilla visible`);
           }
         }).buildElement()
-  .addButton({'id': 'bm-button-create', 'textContent': 'Crear plantilla'}, (instance, button) => {
+  .addButton({'id': 'bm-button-create', 'innerHTML': '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 5v14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>', 'title': 'Crear plantilla (subir y generar)'} , (instance, button) => {
           button.onclick = () => {
             const input = document.querySelector('#bm-input-file-template');
 
@@ -631,7 +643,7 @@ function buildOverlayMain() {
             instance.handleDisplayStatus(`Plantilla creada`);
           }
         }).buildElement()
-  .addButton({'id': 'bm-button-disable', 'textContent': 'Ocultar plantilla'}, (instance, button) => {
+  .addButton({'id': 'bm-button-disable', 'innerHTML': '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>', 'title': 'Ocultar plantilla (desactivar)'} , (instance, button) => {
           button.onclick = () => {
             instance.apiManager?.templateManager?.setTemplatesShouldBeDrawn(false);
             instance.handleDisplayStatus(`Plantilla oculta`);
@@ -678,9 +690,9 @@ function buildOverlayMain() {
     const entries = Object.entries(t.colorPalette)
       .sort((a,b) => b[1].count - a[1].count); // sort by frequency desc
 
-    // Determine if top3 mode is active (button toggles it)
-    const top3Btn = document.querySelector('#bm-button-colors-top3');
-    const top3Mode = top3Btn && top3Btn.dataset && top3Btn.dataset.active === '1';
+  // Determine if minimize mode is active (button toggles it)
+  const minBtn = document.querySelector('#bm-button-colors-minimize');
+  const minimizeMode = minBtn && minBtn.dataset && minBtn.dataset.active === '1';
 
     for (const [rgb, meta] of entries) {
       let row = document.createElement('div');
@@ -763,13 +775,7 @@ function buildOverlayMain() {
       row.appendChild(toggle);
       row.appendChild(swatch);
       row.appendChild(label);
-      listContainer.appendChild(row);
-
-      // If top3 mode is active, stop after adding three color rows
-      if (top3Mode) {
-        const addedRows = listContainer.querySelectorAll('div').length - 1; // subtract back button
-        if (addedRows >= 3) { break; }
-      }
+  listContainer.appendChild(row);
     }
   };
 
