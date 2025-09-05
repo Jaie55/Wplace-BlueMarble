@@ -154,7 +154,7 @@
         <br>
   <img alt="Enable 'Developer Mode' and 'Allow user scripts'" src="https://github.com/Jaie55/Wplace-BlueMarble/blob/main/docs/assets/ComputerChromeInstall3.png"></li>
         <li>Enable "Allow user scripts."</li>
-  <li><strong>One-click install:</strong> Click this link to Install Blue Marble directly: <a href="https://raw.githubusercontent.com/Jaie55/Wplace-BlueMarble/main/dist/BlueMarble.user.css" target="_blank" rel="noopener noreferrer"><strong>Install Blue Marble</strong></a>
+  <li><strong>One-click install:</strong> Click this link to Install Blue Marble directly: <a href="https://raw.githubusercontent.com/Jaie55/Wplace-BlueMarble/main/dist/BlueMarble.user.js" target="_blank" rel="noopener noreferrer"><strong>Install Blue Marble</strong></a>
         <br>
         TamperMonkey will automatically detect the userscript and prompt you to Install it.</li>
         <li>Refresh the <a href="https://wplace.live/" target="_blank" rel="noopener noreferrer">wplace.live</a> webpage.</li>
@@ -199,7 +199,7 @@
         <li>Install the <a href="https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/" target="_blank" rel="noopener noreferrer">TamperMonkey</a> plugin for Firefox.
         <br>
   <img alt="Click the 'Add to Firefox' button" src="https://github.com/Jaie55/Wplace-BlueMarble/blob/main/docs/assets/ComputerFirefoxInstall1.png"></li>
-  <li><strong>One-click install:</strong> Click this link to Install Blue Marble directly: <a href="https://raw.githubusercontent.com/Jaie55/Wplace-BlueMarble/main/dist/BlueMarble.user.css" target="_blank" rel="noopener noreferrer"><strong>Install Blue Marble</strong></a>
+  <li><strong>One-click install:</strong> Click this link to Install Blue Marble directly: <a href="https://raw.githubusercontent.com/Jaie55/Wplace-BlueMarble/main/dist/BlueMarble.user.js" target="_blank" rel="noopener noreferrer"><strong>Install Blue Marble</strong></a>
         <br>
         TamperMonkey will automatically detect the userscript and prompt you to install it.</li>
         <li>Refresh the <a href="https://wplace.live/" target="_blank" rel="noopener noreferrer">wplace.live</a> webpage.</li>
