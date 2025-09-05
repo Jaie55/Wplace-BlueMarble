@@ -584,7 +584,7 @@ function buildOverlayMain() {
       .buildElement()
   .addInputFile({'id': 'bm-input-file-template', 'textContent': 'Subir plantilla', 'accept': 'image/png, image/jpeg, image/webp, image/bmp, image/gif'}).buildElement()
       .addDiv({'id': 'bm-contain-buttons-template'})
-  .addButton({'id': 'bm-button-enable', 'textContent': 'Hacer visible plantilla'}, (instance, button) => {
+  .addButton({'id': 'bm-button-enable', 'textContent': 'Mostrat plantilla'}, (instance, button) => {
           button.onclick = () => {
             instance.apiManager?.templateManager?.setTemplatesShouldBeDrawn(true);
             instance.handleDisplayStatus(`Plantilla visible`);
