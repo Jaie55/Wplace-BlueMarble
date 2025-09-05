@@ -192,7 +192,8 @@ if (Object.keys(userSettings).length == 0) {
   const uuid = crypto.randomUUID(); // Generates a random UUID
   console.log(uuid);
   GM.setValue('bmUserSettings', JSON.stringify({
-    'uuid': uuid
+    'uuid': uuid,
+    'telemetry': 0
   }));
 }
 setInterval(() => apiManager.sendHeartbeat(version), 1000 * 60 * 30); // Sends a heartbeat every 30 minutes
