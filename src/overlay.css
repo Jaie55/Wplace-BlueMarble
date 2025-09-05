@@ -275,14 +275,17 @@ div:has(> #bm-input-file-template),
 /* Make buttons clearer and lighter while keeping dark theme */
 #bm-overlay button, #bm-overlay-telemetry button {
   background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
-  color: #0b0b0b !important;
+  /* Use foreground for button text so it remains legible on dark background */
+  color: var(--bm-foreground) !important;
   border: 1px solid rgba(255,255,255,0.06);
-  border-left: 4px solid var(--bm-accent);
+  /* Subtle accent marker on the left, keep it thin to improve centering */
+  border-left: 2px solid rgba(250,78,73,0.18);
   border-radius: 10px;
-  padding: 0.4em 0.95ch;
+  padding: 0.45em 0.95ch;
   font-size: 0.98rem;
   font-weight: 600;
   box-shadow: 0 6px 18px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.02);
+  text-align: center;
 }
 
 /* All overlay buttons when hovered/focused */
@@ -313,4 +316,31 @@ div:has(> #bm-input-file-template),
 .bm-accent {
   color: var(--bm-accent) !important;
   border-color: var(--bm-accent) !important;
+}
+
+/* Make username / droplets / next-level numbers use the accent for the value so they're more visible */
+#bm-u b, #bm-p b, #bm-i b,
+#bm-user-name b, #bm-user-droplets b, #bm-user-nextlevel b {
+  color: var(--bm-accent) !important;
+}
+
+/* Ensure labels remain readable (full foreground) */
+#bm-u, #bm-p, #bm-i,
+#bm-user-name, #bm-user-droplets, #bm-user-nextlevel {
+  color: var(--bm-foreground) !important;
+}
+
+/* Center and stack action/template buttons for better alignment */
+#bm-4, #bm-c, #bm-k, #bm-1a, #bm-9 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6ch;
+}
+
+/* Make buttons inside those containers narrower and centered */
+#bm-4 button, #bm-c button, #bm-k button, #bm-1a button, #bm-9 button {
+  width: 88%;
+  max-width: 240px;
+  align-self: center;
 }

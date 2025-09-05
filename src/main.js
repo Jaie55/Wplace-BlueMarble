@@ -635,12 +635,12 @@ function buildOverlayMain() {
               window.open('https://pepoafonso.github.io/color_converter_wplace/', '_blank', 'noopener noreferrer');
             });
           }).buildElement()
-          .addButton({'id': 'bm-button-website', 'className': 'bm-help', 'textContent': 'Sitio oficial', 'title': 'Official Black Marble Website'}, 
-            (instance, button) => {
-            button.addEventListener('click', () => {
-              window.open('https://bluemarble.lol/', '_blank', 'noopener noreferrer');
-            });
-          }).buildElement()
+          // .addButton({'id': 'bm-button-website', 'className': 'bm-help', 'textContent': 'Sitio oficial', 'title': 'Official Black Marble Website'}, 
+          //   (instance, button) => {
+          //   button.addEventListener('click', () => {
+          //     window.open('https://bluemarble.lol/', '_blank', 'noopener noreferrer');
+          //   });
+          // }).buildElement()
         .buildElement()
   .addSmall({'textContent': 'Creado por Raw Community', 'style': 'margin-top: auto;'}).buildElement()
       .buildElement()
