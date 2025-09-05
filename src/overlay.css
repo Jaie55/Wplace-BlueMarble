@@ -412,3 +412,73 @@ div:has(> #bm-input-file-template) > button {
 #bm-overlay button, #bm-overlay-telemetry button {
   border: 1px solid rgba(255,255,255,0.08);
 }
+
+/* ======= Layout & button overrides (final overrides to neutralize inline styles) ======= */
+
+/* Show coords left-to-right */
+#bm-contain-coords {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 0.5ch !important;
+}
+
+/* Make any non-input children inside coords display inline and horizontally */
+#bm-contain-coords > *:not(input) {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 0.25ch !important;
+}
+
+/* Style small coordinate suggestion blocks (if generated as div/button/span) */
+#bm-contain-coords > *:not(input) {
+  background: rgba(255,255,255,0.03) !important;
+  color: var(--bm-foreground) !important;
+  border: 1px solid rgba(255,255,255,0.04) !important;
+  padding: 0.18em 0.6ch !important;
+  border-radius: 8px !important;
+  min-width: 3.2ch !important;
+  text-align: center !important;
+}
+
+/* Ensure the pin / helper icon remains small and inline */
+#bm-button-coords, #bm-q {
+  width: auto !important;
+  height: auto !important;
+  min-width: 1.6em !important;
+  min-height: 1.6em !important;
+  padding: 0.15em 0.35ch !important;
+  background: transparent !important;
+  border-radius: 6px !important;
+}
+
+/* Use full border for all buttons (no left accent stripe) */
+#bm-overlay button, #bm-overlay-telemetry button {
+  border-left: none !important;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.6) !important;
+  border: 1px solid rgba(255,255,255,0.06) !important;
+}
+
+/* Template action buttons: full width and accent border */
+#bm-button-enable, #bm-button-create, #bm-button-disable,
+div:has(> #bm-input-file-template) > button, #bm-a > button {
+  width: 100% !important;
+  max-width: 100% !important;
+  align-self: stretch !important;
+  border: 1px solid var(--bm-accent) !important;
+  background: linear-gradient(180deg, rgba(0,0,0,0.12), rgba(0,0,0,0.06)) !important;
+  color: #fff !important;
+}
+
+/* Accent border on hover for all buttons */
+#bm-overlay button:hover, #bm-overlay button:focus-visible, #bm-overlay-telemetry button:hover, #bm-overlay-telemetry button:focus-visible {
+  border-color: var(--bm-accent) !important;
+}
+
+/* Finally, prevent any child popup from exceeding width */
+#bm-contain-coords > * {
+  max-width: 100% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
