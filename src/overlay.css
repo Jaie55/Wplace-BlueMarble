@@ -89,7 +89,7 @@ div#bm-overlay, div#bm-overlay-telemetry {
   min-width: 200px;
 }
 
-/* The Blue Marble image */
+/* The Black Marble image */
 #bm-overlay img {
   display: inline-block;
   height: 2.5em;
@@ -111,7 +111,7 @@ div#bm-overlay, div#bm-overlay-telemetry {
   transition: margin-bottom 0.2s ease;
 }
 
-/* The Blue Marble header */
+/* The Black Marble header */
 #bm-overlay h1, #bm-overlay-telemetry h1 {
   display: inline-block;
   font-size: x-large;

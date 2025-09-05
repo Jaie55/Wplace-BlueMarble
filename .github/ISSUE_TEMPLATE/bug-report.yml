@@ -3,7 +3,7 @@ description: Found a bug? Report it here!
 title: "[BUG] "
 labels: ["bug"]
 assignees: 
-  - SwingTheVine
+  - Jaie55
 body:
   - type: markdown
     attributes:

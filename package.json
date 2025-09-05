@@ -1,11 +1,11 @@
 {
-  "name": "wplace-bluemarble",
+  "name": "wplace-blackmarble",
   "version": "0.85.0",
   "type": "module",
   "homepage": "https://bluemarble.lol/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/SwingTheVine/Wplace-BlueMarble.git"
+  "url": "https://github.com/Jaie55/Wplace-BlueMarble.git"
   },
   "scripts": {
     "build": "node build/build.js",

@@ -9,7 +9,7 @@ import { base64ToUint8, numberToEncoded } from "./utils";
  * @example
  * // JSON structure for a template
  * {
- *   "whoami": "BlueMarble",
+ *   "whoami": "BlackMarble",
  *   "scriptVersion": "1.13.0",
  *   "schemaVersion": "2.1.0",
  *   "templates": {
@@ -23,7 +23,7 @@ import { base64ToUint8, numberToEncoded } from "./utils";
  *     },
  *     "1 $Z": {
  *       "name": "My Template",
- *       "URL": "https://github.com/SwingTheVine/Wplace-BlueMarble/blob/main/dist/assets/Favicon.png",
+ *       "URL": "https://github.com/Jaie55/Wplace-BlueMarble/blob/main/dist/assets/Favicon.png",
  *       "URLType": "template",
  *       "enabled": false,
  *       "tiles": {
@@ -131,9 +131,10 @@ export default class TemplateManager {
     this.overlay.handleDisplayStatus(`Creating template at ${coords.join(', ')}...`);
 
     // Creates a new template instance
+    const nextSortID = Object.keys(this.templatesJSON.templates || {}).length || 0; // allocate next sort id
     const template = new Template({
       displayName: name,
-      sortID: 0, // Object.keys(this.templatesJSON.templates).length || 0, // Uncomment this to enable multiple templates (1/2)
+      sortID: nextSortID,
       authorID: numberToEncoded(this.userID || 0, this.encodingBase),
       file: blob,
       coords: coords
@@ -154,8 +155,9 @@ export default class TemplateManager {
       "palette": template.colorPalette // Persist palette and enabled flags
     };
 
-    this.templatesArray = []; // Remove this to enable multiple templates (2/2)
-    this.templatesArray.push(template); // Pushes the Template object instance to the Template Array
+    // Keep multiple templates: push the new Template instance to the array
+    template.enabled = true;
+    this.templatesArray.push(template);
 
     // ==================== PIXEL COUNT DISPLAY SYSTEM ====================
     // Display pixel count statistics with internationalized number formatting
@@ -227,7 +229,7 @@ export default class TemplateManager {
 
     console.log(`Searching for templates in tile: "${tileCoords}"`);
 
-    const templateArray = this.templatesArray; // Stores a copy for sorting
+  const templateArray = (this.templatesArray || []).filter(t => t && t.enabled !== false); // Only enabled templates
     console.log(templateArray);
 
     // Sorts the array of Template class instances. 0 = first = lowest draw priority
@@ -235,8 +237,8 @@ export default class TemplateManager {
 
     console.log(templateArray);
 
-    // Early exit if none of the active templates touch this tile
-    const anyTouches = templateArray.some(t => {
+  // Early exit if none of the active templates touch this tile
+  const anyTouches = templateArray.some(t => {
       if (!t?.chunked) { return false; }
       // Fast path via recorded tile prefixes if available
       if (t.tilePrefixes && t.tilePrefixes.size > 0) {
@@ -247,14 +249,14 @@ export default class TemplateManager {
     });
     if (!anyTouches) { return tileBlob; }
 
-    // Retrieves the relavent template tile blobs
-    const templatesToDraw = templateArray
+  // Retrieves the relavent template tile blobs
+  const templatesToDraw = templateArray
       .map(template => {
         const matchingTiles = Object.keys(template.chunked).filter(tile =>
           tile.startsWith(tileCoords)
         );
 
-        if (matchingTiles.length === 0) {return null;} // Return null when nothing is found
+  if (matchingTiles.length === 0) {return null;} // Return null when nothing is found
 
         // Retrieves the blobs of the templates for this tile
         const matchingTileBlobs = matchingTiles.map(tile => {
@@ -268,7 +270,7 @@ export default class TemplateManager {
           }
         });
 
-        return matchingTileBlobs?.[0];
+  return matchingTileBlobs?.[0];
       })
     .filter(Boolean);
 
@@ -355,14 +357,16 @@ export default class TemplateManager {
               // If the alpha of the center pixel is less than 64...
               if (templatePixelCenterAlpha < 64) {
                 try {
-                  const activeTemplate = this.templatesArray?.[0];
+                  // Prefer the user-selected template (from UI) when available, otherwise fall back to first template
+                  const selectedKey = (typeof document !== 'undefined') ? document.querySelector('#bm-presets-select')?.value : undefined;
+                  const activeTemplate = this.templatesArray?.find(tm => tm.storageKey === selectedKey) || this.templatesArray?.[0];
                   const tileIdx = (gy * drawSize + gx) * 4;
                   const pr = tilePixels[tileIdx];
                   const pg = tilePixels[tileIdx + 1];
                   const pb = tilePixels[tileIdx + 2];
                   const pa = tilePixels[tileIdx + 3];
 
-                  const key = activeTemplate.allowedColorsSet.has(`${pr},${pg},${pb}`) ? `${pr},${pg},${pb}` : 'other';
+                  const key = activeTemplate && activeTemplate.allowedColorsSet && activeTemplate.allowedColorsSet.has(`${pr},${pg},${pb}`) ? `${pr},${pg},${pb}` : 'other';
 
                   const isSiteColor = activeTemplate?.allowedColorsSet ? activeTemplate.allowedColorsSet.has(key) : false;
                   
@@ -379,7 +383,9 @@ export default class TemplateManager {
               // Ignore non-palette colors (match against allowed set when available) for counting required template pixels
               // try {
 
-              //   const activeTemplate = this.templatesArray?.[0]; // Get the first template
+              //   // Prefer the user-selected template (from UI) when available, otherwise fall back to first template
+              //   const selectedKey = (typeof document !== 'undefined') ? document.querySelector('#bm-presets-select')?.value : undefined;
+              //   const activeTemplate = this.templatesArray?.find(tm => tm.storageKey === selectedKey) || this.templatesArray?.[0]; // Get the first template
 
               //   // IF the stored palette data exists, AND the pixel is not in the allowed palette
               //   if (activeTemplate?.allowedColorsSet && !activeTemplate.allowedColorsSet.has(`${templatePixelCenterRed},${templatePixelCenterGreen},${templatePixelCenterBlue}`)) {
@@ -417,8 +423,8 @@ export default class TemplateManager {
       // Draw the template overlay for visual guidance, honoring color filter
       try {
 
-        const activeTemplate = this.templatesArray?.[0]; // Get the first template
-        const palette = activeTemplate?.colorPalette || {}; // Obtain the color palette of the template
+    const activeTemplate = template; // current template from loop
+    const palette = activeTemplate?.colorPalette || {}; // Obtain the color palette of the template
         const hasDisabled = Object.values(palette).some(v => v?.enabled === false); // Check if any color is disabled
 
         // If none of the template colors are disabled, then draw the image normally
@@ -553,7 +559,7 @@ export default class TemplateManager {
 
     console.log(`BlueMarble length: ${Object.keys(templates).length}`);
 
-    if (Object.keys(templates).length > 0) {
+  if (Object.keys(templates).length > 0) {
 
       for (const template in templates) {
 
@@ -645,6 +651,8 @@ export default class TemplateManager {
           } catch (_) {}
           // Store storageKey for later writes
           template.storageKey = templateKey;
+          // template enabled flag persisted in JSON
+          template.enabled = !!templates[templateKey]?.enabled;
           this.templatesArray.push(template);
           console.log(this.templatesArray);
           console.log(`^^^ This ^^^`);
@@ -655,6 +663,8 @@ export default class TemplateManager {
         const colorUI = document.querySelector('#bm-contain-colorfilter');
         if (colorUI) { colorUI.style.display = ''; }
         window.postMessage({ source: 'blue-marble', bmEvent: 'bm-rebuild-color-list' }, '*');
+        // Also notify template list rebuild
+        window.postMessage({ source: 'blue-marble', bmEvent: 'bm-rebuild-template-list' }, '*');
       } catch (_) { /* no-op */ }
     }
   }

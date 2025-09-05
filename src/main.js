@@ -33,7 +33,7 @@ function inject(callback) {
 inject(() => {
 
   const script = document.currentScript; // Gets the current script HTML Script Element
-  const name = script?.getAttribute('bm-name') || 'Blue Marble'; // Gets the name value that was passed in. Defaults to "Blue Marble" if nothing was found
+  const name = script?.getAttribute('bm-name') || 'Black Marble'; // Gets the name value that was passed in. Defaults to "Black Marble" if nothing was found
   const consoleStyle = script?.getAttribute('bm-cStyle') || ''; // Gets the console style value that was passed in. Defaults to no styling if nothing was found
   const fetchedBlobQueue = new Map(); // Blobs being processed
 
@@ -278,13 +278,13 @@ function buildOverlayMain() {
   overlayMain.addDiv({'id': 'bm-overlay', 'style': 'top: 10px; right: 75px;'})
     .addDiv({'id': 'bm-contain-header'})
       .addDiv({'id': 'bm-bar-drag'}).buildElement()
-      .addImg({'alt': 'Blue Marble Icon - Click to minimize/maximize', 'src': 'https://raw.githubusercontent.com/SwingTheVine/Wplace-BlueMarble/main/dist/assets/Favicon.png', 'style': 'cursor: pointer;'}, 
+  .addImg({'alt': 'Black Marble Icon - Click to minimize/maximize', 'src': 'https://raw.githubusercontent.com/Jaie55/Wplace-BlueMarble/main/dist/assets/Favicon.png', 'style': 'cursor: pointer;'}, 
         (instance, img) => {
           /** Click event handler for overlay minimize/maximize functionality.
            * 
            * Toggles between two distinct UI states:
            * 1. MINIMIZED STATE (60×76px):
-           *    - Shows only the Blue Marble icon and drag bar
+           *    - Shows only the Black Marble icon and drag bar
            *    - Hides all input fields, buttons, and status information
            *    - Applies fixed dimensions for consistent appearance
            *    - Repositions icon with 3px right offset for visual centering
@@ -322,7 +322,7 @@ function buildOverlayMain() {
             // Define elements that should be hidden/shown during state transitions
             // Each element is documented with its purpose for maintainability
             const elementsToToggle = [
-              '#bm-overlay h1',                    // Main title "Blue Marble"
+              '#bm-overlay h1',                    // Main title "Black Marble"
               '#bm-contain-userinfo',              // User information section (username, droplets, level)
               '#bm-overlay hr',                    // Visual separator lines
               '#bm-contain-automation > *:not(#bm-contain-coords)', // Automation section excluding coordinates
@@ -468,8 +468,8 @@ function buildOverlayMain() {
             
             // Update alt text to reflect current state for screen readers and tooltips
             img.alt = isMinimized ? 
-              'Blue Marble Icon - Minimized (Click to maximize)' : 
-              'Blue Marble Icon - Maximized (Click to minimize)';
+              'Black Marble Icon - Minimized (Click to maximize)' : 
+              'Black Marble Icon - Maximized (Click to minimize)';
             
             // No status message needed - state change is visually obvious to users
           });
@@ -550,28 +550,36 @@ function buildOverlayMain() {
         }).buildElement()
       .buildElement()
       // Color filter UI
-      .addDiv({'id': 'bm-contain-colorfilter', 'style': 'max-height: 140px; overflow: auto; border: 1px solid rgba(255,255,255,0.1); padding: 4px; border-radius: 4px; display: none;'})
+  .addDiv({'id': 'bm-contain-colorfilter', 'style': 'max-height: 140px; overflow: auto; border: 1px solid rgba(255,255,255,0.1); padding: 4px; border-radius: 4px; display: none;'})
         .addDiv({'style': 'display: flex; gap: 6px; margin-bottom: 6px;'})
           .addButton({'id': 'bm-button-colors-enable-all', 'textContent': 'Enable All'}, (instance, button) => {
             button.onclick = () => {
-              const t = templateManager.templatesArray[0];
+              const selectedKey = document.querySelector('#bm-presets-select')?.value;
+              const t = templateManager.templatesArray?.find(tm => tm.storageKey === selectedKey) || templateManager.templatesArray?.[0];
               if (!t?.colorPalette) { return; }
               Object.values(t.colorPalette).forEach(v => v.enabled = true);
+              // persist
+              try { if (t?.storageKey && templateManager.templatesJSON?.templates) { templateManager.templatesJSON.templates[t.storageKey].palette = t.colorPalette; GM.setValue('bmTemplates', JSON.stringify(templateManager.templatesJSON)); } } catch(_){}
               buildColorFilterList();
               instance.handleDisplayStatus('Enabled all colors');
             };
           }).buildElement()
           .addButton({'id': 'bm-button-colors-disable-all', 'textContent': 'Disable All'}, (instance, button) => {
             button.onclick = () => {
-              const t = templateManager.templatesArray[0];
+              const selectedKey = document.querySelector('#bm-presets-select')?.value;
+              const t = templateManager.templatesArray?.find(tm => tm.storageKey === selectedKey) || templateManager.templatesArray?.[0];
               if (!t?.colorPalette) { return; }
               Object.values(t.colorPalette).forEach(v => v.enabled = false);
+              try { if (t?.storageKey && templateManager.templatesJSON?.templates) { templateManager.templatesJSON.templates[t.storageKey].palette = t.colorPalette; GM.setValue('bmTemplates', JSON.stringify(templateManager.templatesJSON)); } } catch(_){}
               buildColorFilterList();
               instance.handleDisplayStatus('Disabled all colors');
             };
           }).buildElement()
         .buildElement()
-        .addDiv({'id': 'bm-colorfilter-list'}).buildElement()
+  .buildElement()
+  .addDiv({'id': 'bm-colorfilter-list'}).buildElement()
+  // Template presets list
+  .addDiv({'id': 'bm-presets-list', 'style': 'margin-top:6px; display:none; max-height: 120px; overflow:auto;'}).buildElement()
       .buildElement()
       .addInputFile({'id': 'bm-input-file-template', 'textContent': 'Upload Template', 'accept': 'image/png, image/jpeg, image/webp, image/bmp, image/gif'}).buildElement()
       .addDiv({'id': 'bm-contain-buttons-template'})
@@ -626,22 +634,24 @@ function buildOverlayMain() {
               window.open('https://pepoafonso.github.io/color_converter_wplace/', '_blank', 'noopener noreferrer');
             });
           }).buildElement()
-          .addButton({'id': 'bm-button-website', 'className': 'bm-help', 'innerHTML': '🌐', 'title': 'Official Blue Marble Website'}, 
+          .addButton({'id': 'bm-button-website', 'className': 'bm-help', 'innerHTML': '🌐', 'title': 'Official Black Marble Website'}, 
             (instance, button) => {
             button.addEventListener('click', () => {
               window.open('https://bluemarble.lol/', '_blank', 'noopener noreferrer');
             });
           }).buildElement()
         .buildElement()
-        .addSmall({'textContent': 'Made by SwingTheVine', 'style': 'margin-top: auto;'}).buildElement()
+        .addSmall({'textContent': 'Made by Raw Community', 'style': 'margin-top: auto;'}).buildElement()
       .buildElement()
     .buildElement()
   .buildOverlay(document.body);
 
   // ------- Helper: Build the color filter list -------
   window.buildColorFilterList = function buildColorFilterList() {
-    const listContainer = document.querySelector('#bm-colorfilter-list');
-    const t = templateManager.templatesArray?.[0];
+  const listContainer = document.querySelector('#bm-colorfilter-list');
+  // Determine selected template key
+  const selectedKey = document.querySelector('#bm-presets-select')?.value;
+  const t = templateManager.templatesArray?.find(tm => tm.storageKey === selectedKey) || templateManager.templatesArray?.[0];
     if (!listContainer || !t?.colorPalette) {
       if (listContainer) { listContainer.innerHTML = '<small>No template colors to display.</small>'; }
       return;
@@ -678,13 +688,15 @@ function buildOverlayMain() {
         const [r, g, b] = rgb.split(',').map(Number);
         swatch.style.background = `rgb(${r},${g},${b})`;
         try {
-          const tMeta = templateManager.templatesArray?.[0]?.rgbToMeta?.get(rgb);
-          if (tMeta && typeof tMeta.id === 'number') {
-            const displayName = tMeta?.name || `rgb(${r},${g},${b})`;
-            const starLeft = tMeta.premium ? '★ ' : '';
-            labelText = `#${tMeta.id} ${starLeft}${displayName} • ${labelText}`;
-          }
-        } catch (ignored) {}
+            const selectedKey = document.querySelector('#bm-presets-select')?.value;
+            const tObj = templateManager.templatesArray?.find(tm => tm.storageKey === selectedKey) || templateManager.templatesArray?.[0];
+            const tMeta = tObj?.rgbToMeta?.get(rgb);
+            if (tMeta && typeof tMeta.id === 'number') {
+              const displayName = tMeta?.name || `rgb(${r},${g},${b})`;
+              const starLeft = tMeta.premium ? '★ ' : '';
+              labelText = `#${tMeta.id} ${starLeft}${displayName} • ${labelText}`;
+            }
+          } catch (ignored) {}
       }
       label.textContent = labelText;
 
@@ -695,7 +707,8 @@ function buildOverlayMain() {
         meta.enabled = toggle.checked;
         overlayMain.handleDisplayStatus(`${toggle.checked ? 'Enabled' : 'Disabled'} ${rgb}`);
         try {
-          const t = templateManager.templatesArray?.[0];
+          const selectedKey = document.querySelector('#bm-presets-select')?.value;
+          const t = templateManager.templatesArray?.find(tm => tm.storageKey === selectedKey) || templateManager.templatesArray?.[0];
           const key = t?.storageKey;
           if (t && key && templateManager.templatesJSON?.templates?.[key]) {
             templateManager.templatesJSON.templates[key].palette = t.colorPalette;
@@ -726,10 +739,92 @@ function buildOverlayMain() {
         const colorUI = document.querySelector('#bm-contain-colorfilter');
         if (colorUI) { colorUI.style.display = ''; }
         buildColorFilterList();
+  try { window.buildTemplatePresetList(); } catch (_) {}
       }
     } catch (_) {}
   }, 0);
 }
+
+  // Helper: Build template presets list (multiple templates)
+  window.buildTemplatePresetList = function buildTemplatePresetList() {
+    const listContainer = document.querySelector('#bm-presets-list');
+    if (!listContainer) { return; }
+    listContainer.innerHTML = '';
+    const templates = templateManager.templatesArray || [];
+    if (!templates.length) { listContainer.style.display = 'none'; return; }
+    listContainer.style.display = '';
+
+    // Build a select for choosing active template
+    const select = document.createElement('select');
+    select.id = 'bm-presets-select';
+    select.style.width = '100%';
+    templates.forEach(t => {
+      const opt = document.createElement('option');
+      opt.value = t.storageKey || '';
+      opt.textContent = t.displayName || t.storageKey || 'Template';
+      select.appendChild(opt);
+    });
+    select.addEventListener('change', () => { buildColorFilterList(); });
+    listContainer.appendChild(select);
+
+    // Build per-template enable toggles
+    templates.forEach(t => {
+      const row = document.createElement('div');
+      row.style.display = 'flex';
+      row.style.alignItems = 'center';
+      row.style.justifyContent = 'space-between';
+      row.style.gap = '8px';
+      row.style.marginTop = '6px';
+
+      const left = document.createElement('div');
+      left.style.display = 'flex';
+      left.style.alignItems = 'center';
+      left.style.gap = '8px';
+
+      const toggle = document.createElement('input');
+      toggle.type = 'checkbox';
+      toggle.checked = !!t.enabled;
+      toggle.addEventListener('change', () => {
+        t.enabled = toggle.checked;
+        // persist to templatesJSON
+        try {
+          if (templateManager.templatesJSON?.templates && t.storageKey) {
+            templateManager.templatesJSON.templates[t.storageKey].enabled = !!t.enabled;
+            GM.setValue('bmTemplates', JSON.stringify(templateManager.templatesJSON));
+          }
+        } catch (_) {}
+        overlayMain.handleDisplayStatus(`${toggle.checked ? 'Enabled' : 'Disabled'} ${t.displayName}`);
+      });
+
+      const label = document.createElement('span');
+      label.style.fontSize = '12px';
+      label.textContent = t.displayName || t.storageKey;
+
+      left.appendChild(toggle);
+      left.appendChild(label);
+
+      row.appendChild(left);
+
+      const btn = document.createElement('button');
+      btn.className = 'btn btn-soft';
+      btn.textContent = 'Select';
+      btn.addEventListener('click', () => {
+        const sel = document.querySelector('#bm-presets-select');
+        if (sel) { sel.value = t.storageKey; buildColorFilterList(); }
+      });
+
+      row.appendChild(btn);
+
+      listContainer.appendChild(row);
+    });
+  };
+
+  // Listen for template list rebuild event
+  window.addEventListener('message', (event) => {
+    if (event?.data?.bmEvent === 'bm-rebuild-template-list') {
+      try { window.buildTemplatePresetList(); } catch (_) {}
+    }
+  });
 
 function buildTelemetryOverlay(overlay) {
   overlay.addDiv({'id': 'bm-overlay-telemetry', style: 'top: 0px; left: 0px; width: 100vw; max-width: 100vw; height: 100vh; max-height: 100vh; z-index: 9999;'})
@@ -744,7 +839,7 @@ function buildTelemetryOverlay(overlay) {
         .addDiv({'style': 'width: fit-content; margin: auto; text-align: center;'})
         .addButton({'id': 'bm-button-telemetry-more', 'textContent': 'More Information'}, (instance, button) => {
           button.onclick = () => {
-            window.open('https://github.com/SwingTheVine/Wplace-TelemetryServer#telemetry-data', '_blank', 'noopener noreferrer');
+            window.open('https://github.com/Jaie55/Wplace-TelemetryServer#telemetry-data', '_blank', 'noopener noreferrer');
           }
         }).buildElement()
         .buildElement()
@@ -774,7 +869,7 @@ function buildTelemetryOverlay(overlay) {
           }).buildElement()
         .buildElement()
         .addBr().buildElement()
-        .addP({'textContent': 'We collect anonymous telemetry data such as your browser, OS, and script version to make the experience better for everyone. The data is never shared personally. The data is never sold. You can turn this off by pressing the \'Disable\' button, but keeping it on helps us improve features and reliability faster. Thank you for supporting the Blue Marble!'}).buildElement()
+  .addP({'textContent': 'We collect anonymous telemetry data such as your browser, OS, and script version to make the experience better for everyone. The data is never shared personally. The data is never sold. You can turn this off by pressing the \'Disable\' button, but keeping it on helps us improve features and reliability faster. Thank you for supporting the Black Marble!'}).buildElement()
         .addP({'textContent': 'You can disable telemetry by pressing the "Disable" button below.'}).buildElement()
       .buildElement()
     .buildElement()
