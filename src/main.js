@@ -231,7 +231,7 @@ function observeBlack() {
     if (!move) {
       move = document.createElement('button');
       move.id = 'bm-button-move';
-      move.textContent = 'Move ↑';
+  move.textContent = 'Mover ↑';
       move.className = 'btn btn-soft';
       move.onclick = function() {
         const roundedBox = this.parentNode.parentNode.parentNode.parentNode; // Obtains the rounded box
@@ -482,9 +482,9 @@ function buildOverlayMain() {
     .addHr().buildElement()
 
     .addDiv({'id': 'bm-contain-userinfo'})
-      .addP({'id': 'bm-user-name', 'textContent': 'Username:'}).buildElement()
-      .addP({'id': 'bm-user-droplets', 'textContent': 'Droplets:'}).buildElement()
-      .addP({'id': 'bm-user-nextlevel', 'textContent': 'Next level in...'}).buildElement()
+  .addP({'id': 'bm-user-name', 'textContent': 'Usuario:'}).buildElement()
+  .addP({'id': 'bm-user-droplets', 'textContent': 'Gotas:'}).buildElement()
+  .addP({'id': 'bm-user-nextlevel', 'textContent': 'Siguiente nivel en...'}).buildElement()
     .buildElement()
 
     .addHr().buildElement()
@@ -553,7 +553,7 @@ function buildOverlayMain() {
       // Color filter UI
   .addDiv({'id': 'bm-contain-colorfilter', 'style': 'max-height: 140px; overflow: auto; border: 1px solid rgba(255,255,255,0.1); padding: 4px; border-radius: 4px; display: none;'})
         .addDiv({'style': 'display: flex; gap: 6px; margin-bottom: 6px;'})
-          .addButton({'id': 'bm-button-colors-enable-all', 'textContent': 'Enable All'}, (instance, button) => {
+          .addButton({'id': 'bm-button-colors-enable-all', 'textContent': 'Activar todo'}, (instance, button) => {
             button.onclick = () => {
               const selectedKey = document.querySelector('#bm-presets-select')?.value;
               const t = templateManager.templatesArray?.find(tm => tm.storageKey === selectedKey) || templateManager.templatesArray?.[0];
@@ -565,7 +565,7 @@ function buildOverlayMain() {
               instance.handleDisplayStatus('Enabled all colors');
             };
           }).buildElement()
-          .addButton({'id': 'bm-button-colors-disable-all', 'textContent': 'Disable All'}, (instance, button) => {
+          .addButton({'id': 'bm-button-colors-disable-all', 'textContent': 'Desactivar todo'}, (instance, button) => {
             button.onclick = () => {
               const selectedKey = document.querySelector('#bm-presets-select')?.value;
               const t = templateManager.templatesArray?.find(tm => tm.storageKey === selectedKey) || templateManager.templatesArray?.[0];
@@ -582,15 +582,15 @@ function buildOverlayMain() {
   // Template presets list
   .addDiv({'id': 'bm-presets-list', 'style': 'margin-top:6px; display:none; max-height: 120px; overflow:auto;'}).buildElement()
       .buildElement()
-      .addInputFile({'id': 'bm-input-file-template', 'textContent': 'Upload Template', 'accept': 'image/png, image/jpeg, image/webp, image/bmp, image/gif'}).buildElement()
+  .addInputFile({'id': 'bm-input-file-template', 'textContent': 'Subir plantilla', 'accept': 'image/png, image/jpeg, image/webp, image/bmp, image/gif'}).buildElement()
       .addDiv({'id': 'bm-contain-buttons-template'})
-        .addButton({'id': 'bm-button-enable', 'textContent': 'Enable'}, (instance, button) => {
+  .addButton({'id': 'bm-button-enable', 'textContent': 'Activar'}, (instance, button) => {
           button.onclick = () => {
             instance.apiManager?.templateManager?.setTemplatesShouldBeDrawn(true);
             instance.handleDisplayStatus(`Enabled templates!`);
           }
         }).buildElement()
-        .addButton({'id': 'bm-button-create', 'textContent': 'Create'}, (instance, button) => {
+  .addButton({'id': 'bm-button-create', 'textContent': 'Crear'}, (instance, button) => {
           button.onclick = () => {
             const input = document.querySelector('#bm-input-file-template');
 
@@ -616,7 +616,7 @@ function buildOverlayMain() {
             instance.handleDisplayStatus(`Drew to canvas!`);
           }
         }).buildElement()
-        .addButton({'id': 'bm-button-disable', 'textContent': 'Disable'}, (instance, button) => {
+  .addButton({'id': 'bm-button-disable', 'textContent': 'Desactivar'}, (instance, button) => {
           button.onclick = () => {
             instance.apiManager?.templateManager?.setTemplatesShouldBeDrawn(false);
             instance.handleDisplayStatus(`Disabled templates!`);
@@ -642,7 +642,7 @@ function buildOverlayMain() {
             });
           }).buildElement()
         .buildElement()
-        .addSmall({'textContent': 'Made by Raw Community', 'style': 'margin-top: auto;'}).buildElement()
+  .addSmall({'textContent': 'Creado por Raw Community', 'style': 'margin-top: auto;'}).buildElement()
       .buildElement()
     .buildElement()
   .buildOverlay(document.body);
@@ -808,7 +808,7 @@ function buildOverlayMain() {
 
       const btn = document.createElement('button');
       btn.className = 'btn btn-soft';
-      btn.textContent = 'Select';
+  btn.textContent = 'Seleccionar';
       btn.addEventListener('click', () => {
         const sel = document.querySelector('#bm-presets-select');
         if (sel) { sel.value = t.storageKey; buildColorFilterList(); }
@@ -831,14 +831,14 @@ function buildTelemetryOverlay(overlay) {
   overlay.addDiv({'id': 'bm-overlay-telemetry', style: 'top: 0px; left: 0px; width: 100vw; max-width: 100vw; height: 100vh; max-height: 100vh; z-index: 9999;'})
     .addDiv({'id': 'bm-contain-all-telemetry', style: 'display: flex; flex-direction: column; align-items: center;'})
       .addDiv({'id': 'bm-contain-header-telemetry', style: 'margin-top: 10%;'})
-        .addHeader(1, {'textContent': `${name} Telemetry`}).buildElement()
+  .addHeader(1, {'textContent': `${name} Telemetría`}).buildElement()
       .buildElement()
 
       .addDiv({'id': 'bm-contain-telemetry', style: 'max-width: 50%; overflow-y: auto; max-height: 80vh;'})
         .addHr().buildElement()
         .addBr().buildElement()
         .addDiv({'style': 'width: fit-content; margin: auto; text-align: center;'})
-        .addButton({'id': 'bm-button-telemetry-more', 'textContent': 'More Information'}, (instance, button) => {
+  .addButton({'id': 'bm-button-telemetry-more', 'textContent': 'Más información'}, (instance, button) => {
           button.onclick = () => {
             window.open('https://github.com/Jaie55/Wplace-TelemetryServer#telemetry-data', '_blank', 'noopener noreferrer');
           }
@@ -846,7 +846,7 @@ function buildTelemetryOverlay(overlay) {
         .buildElement()
         .addBr().buildElement()
         .addDiv({style: 'width: fit-content; margin: auto; text-align: center;'})
-          .addButton({'id': 'bm-button-telemetry-enable', 'textContent': 'Enable Telemetry', 'style': 'margin-right: 2ch;'}, (instance, button) => {
+          .addButton({'id': 'bm-button-telemetry-enable', 'textContent': 'Activar telemetría', 'style': 'margin-right: 2ch;'}, (instance, button) => {
             button.onclick = () => {
               const userSettings = JSON.parse(GM_getValue('bmUserSettings', '{}'));
               userSettings.telemetry = 1;
@@ -857,7 +857,7 @@ function buildTelemetryOverlay(overlay) {
               }
             }
           }).buildElement()
-          .addButton({'id': 'bm-button-telemetry-disable', 'textContent': 'Disable Telemetry'}, (instance, button) => {
+          .addButton({'id': 'bm-button-telemetry-disable', 'textContent': 'Desactivar telemetría'}, (instance, button) => {
             button.onclick = () => {
               const userSettings = JSON.parse(GM_getValue('bmUserSettings', '{}'));
               userSettings.telemetry = 0;
@@ -870,8 +870,8 @@ function buildTelemetryOverlay(overlay) {
           }).buildElement()
         .buildElement()
         .addBr().buildElement()
-  .addP({'textContent': 'We collect anonymous telemetry data such as your browser, OS, and script version to make the experience better for everyone. The data is never shared personally. The data is never sold. You can turn this off by pressing the \'Disable\' button, but keeping it on helps us improve features and reliability faster. Thank you for supporting the Black Marble!'}).buildElement()
-        .addP({'textContent': 'You can disable telemetry by pressing the "Disable" button below.'}).buildElement()
+  .addP({'textContent': 'Recopilamos datos de telemetría anónimos como tu navegador, sistema operativo y versión del script para mejorar la experiencia. Los datos no se comparten a nivel personal ni se venden. Puedes desactivar esto pulsando el botón "Desactivar telemetría". Gracias por apoyar Black Marble.'}).buildElement()
+        .addP({'textContent': 'Puedes desactivar la telemetría pulsando el botón "Desactivar telemetría" abajo.'}).buildElement()
       .buildElement()
     .buildElement()
   .buildOverlay(document.body);

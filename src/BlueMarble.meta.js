@@ -7,7 +7,7 @@
 // @license      MPL-2.0
 // @supportURL   https://discord.gg/tpeBPy46hf
 // @homepageURL  https://bluemarble.lol/
-// @icon         https://raw.githubusercontent.com/Jaie55/Wplace-BlueMarble/8d02ac9cbe8f6861248152f2b0d632a0b4a830ee/dist/assets/Favicon.png
+// @icon         https://i.imgur.com/qP3QpF9.png
 // @updateURL    https://raw.githubusercontent.com/Jaie55/Wplace-BlueMarble/main/dist/BlueMarble.user.js
 // @downloadURL  https://raw.githubusercontent.com/Jaie55/Wplace-BlueMarble/main/dist/BlueMarble.user.js
 // @match        https://wplace.live/*
