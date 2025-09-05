@@ -318,6 +318,32 @@ div:has(> #bm-input-file-template),
   border-color: var(--bm-accent) !important;
 }
 
+/* Footer small size override */
+#bm-A .bm-small, #bm-A footer, #bm-A .bm-footer, #bm-A .small {
+  font-size: 11px !important;
+}
+
+/* Modal for editing template coords */
+.bm-modal {
+  position: fixed;
+  left: 0; top: 0; right: 0; bottom: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.6);
+  z-index: 99999;
+}
+.bm-modal-content {
+  background: #0b0b0b;
+  border: 1px solid var(--bm-accent);
+  padding: 12px;
+  border-radius: 6px;
+  width: 320px;
+}
+.bm-modal-content h3 { margin: 0 0 8px 0; color: var(--bm-accent); }
+.bm-modal-form input { width: 100%; padding: 6px; background: #111; color: #fff; border: 1px solid rgba(255,255,255,0.06); }
+.bm-modal-form label { color: #ccc; }
+
 /* Make username / droplets / next-level numbers use the accent for the value so they're more visible */
 #bm-u b, #bm-p b, #bm-i b,
 #bm-user-name b, #bm-user-droplets b, #bm-user-nextlevel b {

@@ -479,12 +479,15 @@ function buildOverlayMain() {
       .addHeader(1, {'textContent': name}).buildElement()
     .buildElement()
 
+  // Template counter indicator (Plantillas: N (M activas))
+  .addDiv({'id': 'bm-templates-indicator', 'style': 'margin-top: 4px; font-size: 12px; color: var(--bm-accent);', 'textContent': 'Plantillas: 0 (0 activas)'}).buildElement()
+
     .addHr().buildElement()
 
     .addDiv({'id': 'bm-contain-userinfo'})
-  .addP({'id': 'bm-user-name', 'textContent': 'Usuario:'}).buildElement()
-  .addP({'id': 'bm-user-droplets', 'textContent': 'Gotas:'}).buildElement()
-  .addP({'id': 'bm-user-nextlevel', 'textContent': 'Siguiente nivel en...'}).buildElement()
+  .addP({'id': 'bm-user-name', 'textContent': 'Usuario: -'}).buildElement()
+  .addP({'id': 'bm-user-droplets', 'textContent': 'Gotas: -'}).buildElement()
+  .addP({'id': 'bm-user-nextlevel', 'textContent': 'Siguiente nivel en -'}).buildElement()
     .buildElement()
 
     .addHr().buildElement()
@@ -580,7 +583,7 @@ function buildOverlayMain() {
   .buildElement()
   .addDiv({'id': 'bm-colorfilter-list'}).buildElement()
   // Template presets list
-  .addDiv({'id': 'bm-presets-list', 'style': 'margin-top:6px; display:none; max-height: 120px; overflow:auto;'}).buildElement()
+  .addDiv({'id': 'bm-presets-list', 'style': 'margin-top:6px; display:block; max-height: 200px; overflow:auto;'}).buildElement()
       .buildElement()
   .addInputFile({'id': 'bm-input-file-template', 'textContent': 'Subir plantilla', 'accept': 'image/png, image/jpeg, image/webp, image/bmp, image/gif'}).buildElement()
       .addDiv({'id': 'bm-contain-buttons-template'})
@@ -746,6 +749,70 @@ function buildOverlayMain() {
   }, 0);
 }
 
+// Modal for editing template coordinates
+function createTemplateEditModal() {
+  // If modal already exists, return
+  if (document.querySelector('#bm-modal-template-edit')) { return; }
+  const modal = document.createElement('div');
+  modal.id = 'bm-modal-template-edit';
+  modal.style.display = 'none';
+  modal.className = 'bm-modal';
+
+  const content = document.createElement('div');
+  content.className = 'bm-modal-content';
+
+  const header = document.createElement('h3');
+  header.textContent = 'Editar posición de plantilla';
+  content.appendChild(header);
+
+  const form = document.createElement('div');
+  form.className = 'bm-modal-form';
+
+  ['Tl X','Tl Y','Px X','Px Y'].forEach((label, idx) => {
+    const row = document.createElement('div'); row.style.display = 'flex'; row.style.gap = '6px'; row.style.marginBottom = '6px';
+    const lab = document.createElement('label'); lab.textContent = label; lab.style.width = '60px';
+    const input = document.createElement('input'); input.type = 'number'; input.id = `bm-modal-input-${idx}`; input.style.flex = '1';
+    row.appendChild(lab); row.appendChild(input); form.appendChild(row);
+  });
+
+  const btnRow = document.createElement('div'); btnRow.style.display = 'flex'; btnRow.style.gap = '8px'; btnRow.style.marginTop = '8px';
+  const btnSave = document.createElement('button'); btnSave.className = 'btn btn-soft'; btnSave.textContent = 'Guardar';
+  const btnCancel = document.createElement('button'); btnCancel.className = 'btn btn-soft'; btnCancel.textContent = 'Cancelar';
+  btnRow.appendChild(btnSave); btnRow.appendChild(btnCancel);
+
+  content.appendChild(form); content.appendChild(btnRow); modal.appendChild(content); document.body.appendChild(modal);
+
+  let activeStorageKey = null;
+
+  btnCancel.addEventListener('click', () => { modal.style.display = 'none'; activeStorageKey = null; });
+  btnSave.addEventListener('click', () => {
+    try {
+      const vals = [0,1,2,3].map(i => Number(document.querySelector(`#bm-modal-input-${i}`).value || 0));
+      if (vals.some(v => isNaN(v))) { alert('Coordenadas inválidas'); return; }
+      if (activeStorageKey && templateManager.templatesJSON?.templates && templateManager.templatesJSON.templates[activeStorageKey]) {
+        templateManager.templatesJSON.templates[activeStorageKey].coords = vals.join(',');
+        GM.setValue('bmTemplates', JSON.stringify(templateManager.templatesJSON));
+        window.postMessage({ source: 'blue-marble', bmEvent: 'bm-rebuild-template-list' }, '*');
+        overlayMain.handleDisplayStatus(`Coords actualizadas: ${vals.join(',')}`);
+      }
+    } catch (e) { overlayMain.handleDisplayError('Error guardando coordenadas'); }
+    modal.style.display = 'none'; activeStorageKey = null;
+  });
+
+  // Expose open function
+  window.openEditTemplateModal = function(storageKey) {
+    createTemplateEditModal();
+    activeStorageKey = storageKey;
+    const t = templateManager.templatesJSON?.templates?.[storageKey];
+    const coords = (t?.coords || '').split(',').map(s => Number(s) || 0);
+    for (let i = 0; i < 4; i++) { document.querySelector(`#bm-modal-input-${i}`).value = coords[i] || 0; }
+    modal.style.display = 'flex';
+  }
+}
+
+// Ensure modal exists on startup
+setTimeout(() => { try { createTemplateEditModal(); } catch (_) {} }, 200);
+
   // Helper: Build template presets list (multiple templates)
   window.buildTemplatePresetList = function buildTemplatePresetList() {
     const listContainer = document.querySelector('#bm-presets-list');
@@ -867,17 +934,7 @@ function buildOverlayMain() {
       btnEdit.className = 'btn btn-soft';
       btnEdit.textContent = 'Editar posición';
       btnEdit.addEventListener('click', () => {
-        // Prompt for new coords in format: x,y,x,y
-        const current = templateManager.templatesJSON?.templates?.[t.storageKey]?.coords || '';
-        const val = prompt('Introduce nuevas coordenadas (TlX,TlY,PxX,PxY):', current);
-        if (!val) { return; }
-        const parts = val.split(',').map(s => Number(s.trim()));
-        if (parts.length !== 4 || parts.some(isNaN)) { alert('Coordenadas inválidas'); return; }
-        try {
-          templateManager.templatesJSON.templates[t.storageKey].coords = parts.join(',');
-          GM.setValue('bmTemplates', JSON.stringify(templateManager.templatesJSON));
-          overlayMain.handleDisplayStatus(`Coords actualizadas: ${parts.join(',')}`);
-        } catch (e) { overlayMain.handleDisplayError('Error guardando coordenadas'); }
+        try { window.openEditTemplateModal(t.storageKey); } catch (e) { alert('No se pudo abrir el editor'); }
       });
 
       const btnDel = document.createElement('button');
