@@ -344,3 +344,38 @@ div:has(> #bm-input-file-template),
   max-width: 240px;
   align-self: center;
 }
+
+/* Ensure help-style buttons (.bm-help/.bm-D) keep icons small and centered */
+.bm-help, .bm-D {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35ch;
+  min-width: 2.2em;
+  min-height: 2.2em;
+  padding: 0.2em 0.6ch;
+}
+
+/* Constrain any SVG inside the help buttons to avoid giant icons */
+.bm-help svg, .bm-D svg, #bm-button-coords svg {
+  width: 1.1em !important;
+  height: 1.1em !important;
+  display: block;
+  vertical-align: middle;
+  fill: var(--bm-foreground) !important;
+}
+
+/* Add a visible accent stripe using an inset shadow so full-width buttons still show the accent */
+#bm-overlay button, #bm-overlay-telemetry button {
+  box-shadow: 0 6px 18px rgba(0,0,0,0.6), inset 4px 0 0 rgba(250,78,73,0.09);
+}
+
+/* Make the upload/file button keep the accent stripe visible when width:100% */
+div:has(> #bm-input-file-template) > button {
+  box-shadow: 0 6px 18px rgba(0,0,0,0.6), inset 4px 0 0 var(--bm-accent);
+}
+
+/* Slightly increase contrast of the button border so edges are visible on pure black */
+#bm-overlay button, #bm-overlay-telemetry button {
+  border: 1px solid rgba(255,255,255,0.08);
+}
