@@ -161,6 +161,19 @@ inject(() => {
 const cssOverlay = GM_getResourceText("CSS-BM-File");
 GM_addStyle(cssOverlay);
 
+// Additional UI fixes: compact buttons, wrapped rows, and minimized color-list class
+GM_addStyle(`
+  /* Ensure action rows wrap and buttons stay compact */
+  #bm-contain-colorfilter > div { display: flex; flex-wrap: wrap; gap: 6px; }
+  #bm-contain-buttons-template, #bm-contain-buttons-action { display: flex; flex-wrap: wrap; gap: 6px; }
+  #bm-contain-buttons-template .btn, #bm-contain-buttons-action .btn, button.btn { min-width: 36px; padding: 6px 8px; font-size: 12px; }
+  #bm-presets-list, #bm-contain-colorfilter, #bm-colorfilter-list { max-width: 320px; box-sizing: border-box; }
+  /* Minimized colors: show ~3 rows (approx), keep scroll */
+  .bm-minimized-colors { max-height: 96px !important; overflow-y: auto !important; }
+  /* Back button smaller */
+  .bm-back-button { padding: 6px 10px; font-size: 13px; }
+`);
+
 // Imports the Roboto Mono font family
 var stylesheetLink = document.createElement('link');
 stylesheetLink.href = 'https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap';
@@ -571,24 +584,15 @@ function buildOverlayMain() {
             };
           }).buildElement()
           .addButton({'id': 'bm-button-colors-minimize', 'innerHTML': '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="10" width="18" height="4" rx="2" fill="currentColor"/></svg>', 'title': 'Minimizar lista (mostrar 3) - volver a pulsar para ver todo', 'style': 'margin-left: auto;'}, (instance, button) => {
-            // Toggle minimize: show only 3 rows but keep scrollbar for full list
+            // Toggle minimize: apply/remove CSS class instead of many inline styles
             button.dataset.active = '0';
             button.addEventListener('click', () => {
               const active = button.dataset.active === '1';
               button.dataset.active = active ? '0' : '1';
-              // update title to reflect state
               button.title = active ? 'Minimizar lista (mostrar 3) - volver a pulsar para ver todo' : 'Mostrar lista completa';
-              // find the primary color list container
               const colorRoot = document.querySelector('#bm-g') || document.querySelector('#bm-colorfilter-list');
               if (colorRoot) {
-                if (!active) {
-                  // activate minimized: limit height to approx 3 rows, keep scroll
-                  colorRoot.style.maxHeight = '96px';
-                  colorRoot.style.overflowY = 'auto';
-                } else {
-                  colorRoot.style.maxHeight = '';
-                  colorRoot.style.overflowY = '';
-                }
+                colorRoot.classList.toggle('bm-minimized-colors', !active);
               }
             });
           }).buildElement()
