@@ -73,9 +73,10 @@ export default class ApiManager {
           }
           this.templateManager.userID = dataJSON['id'];
           
-            overlay.updateInnerHTML('bm-user-name', `Usuario: <b>${escapeHTML(dataJSON['name'])}</b>`); // Actualiza el nombre de usuario
-          overlay.updateInnerHTML('bm-user-droplets', `Droplets: <b>${new Intl.NumberFormat().format(dataJSON['droplets'])}</b>`); // Updates the text content of the droplets field
-            overlay.updateInnerHTML('bm-user-nextlevel', `Siguiente nivel en <b>${new Intl.NumberFormat().format(nextLevelPixels)}</b> ${nextLevelPixels == 1 ? 'píxel' : 'píxeles'}`); // Actualiza el texto del siguiente nivel
+            // Mostrar nombre (preservando acentos), gotas y pixeles restantes con acentos correctos
+            overlay.updateInnerHTML('bm-user-name', `Usuario: <b>${escapeHTML(dataJSON['name'])}</b>`);
+            overlay.updateInnerHTML('bm-user-droplets', `Gotas: <b>${new Intl.NumberFormat().format(dataJSON['droplets'])}</b>`);
+            overlay.updateInnerHTML('bm-user-nextlevel', `Siguiente nivel en <b>${new Intl.NumberFormat().format(nextLevelPixels)}</b> ${nextLevelPixels == 1 ? 'píxel' : 'píxeles'}`);
           break;
 
         case 'pixel': // Request to retrieve pixel data

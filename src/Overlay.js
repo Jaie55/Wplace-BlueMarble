@@ -570,21 +570,17 @@ export default class Overlay {
     // Smooth animation loop using requestAnimationFrame for optimal performance
     const updatePosition = () => {
       if (isDragging) {
-        // Only update DOM if position changed significantly (reduce repaints)
-        const deltaX = Math.abs(currentX - targetX);
-        const deltaY = Math.abs(currentY - targetY);
-        
-        if (deltaX > 0.5 || deltaY > 0.5) {
+        // Update immediately for snappy drag behavior
+        if (currentX !== targetX || currentY !== targetY) {
           currentX = targetX;
           currentY = targetY;
-          
           // Use CSS transform for GPU acceleration instead of left/top
           moveMe.style.transform = `translate(${currentX}px, ${currentY}px)`;
           moveMe.style.left = '0px';
           moveMe.style.top = '0px';
           moveMe.style.right = '';
         }
-        
+
         animationFrame = requestAnimationFrame(updatePosition);
       }
     };
@@ -607,8 +603,12 @@ export default class Overlay {
         currentX = matrix.m41;
         currentY = matrix.m42;
       } else {
-        currentX = initialRect.left;
-        currentY = initialRect.top;
+        // Start transforms from 0 to keep movement consistent and avoid jumps
+        currentX = 0;
+        currentY = 0;
+        // Anchor the element visually at its current rect while using transforms
+        moveMe.style.left = initialRect.left + 'px';
+        moveMe.style.top = initialRect.top + 'px';
       }
       
       targetX = currentX;
