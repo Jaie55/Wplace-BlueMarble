@@ -768,6 +768,38 @@ function buildOverlayMain() {
     select.addEventListener('change', () => { buildColorFilterList(); });
     listContainer.appendChild(select);
 
+    // Global template actions: activate all / deactivate all
+    const actionsRow = document.createElement('div');
+    actionsRow.style.display = 'flex';
+    actionsRow.style.gap = '6px';
+    actionsRow.style.marginTop = '8px';
+
+    const btnEnableAll = document.createElement('button');
+    btnEnableAll.className = 'btn btn-soft';
+    btnEnableAll.textContent = 'Activar todas';
+    btnEnableAll.addEventListener('click', () => {
+      templates.forEach(t => { t.enabled = true; try { if (templateManager.templatesJSON?.templates && t.storageKey) { templateManager.templatesJSON.templates[t.storageKey].enabled = true; } } catch(_){} });
+      try { GM.setValue('bmTemplates', JSON.stringify(templateManager.templatesJSON)); } catch(_){ }
+      // Notify UI to rebuild template lists and redraw
+      window.postMessage({ source: 'blue-marble', bmEvent: 'bm-rebuild-template-list' }, '*');
+      overlayMain.handleDisplayStatus('Activadas todas las plantillas');
+    });
+
+    const btnDisableAll = document.createElement('button');
+    btnDisableAll.className = 'btn btn-soft';
+    btnDisableAll.textContent = 'Desactivar todas';
+    btnDisableAll.addEventListener('click', () => {
+      templates.forEach(t => { t.enabled = false; try { if (templateManager.templatesJSON?.templates && t.storageKey) { templateManager.templatesJSON.templates[t.storageKey].enabled = false; } } catch(_){} });
+      try { GM.setValue('bmTemplates', JSON.stringify(templateManager.templatesJSON)); } catch(_){ }
+      // Notify UI to rebuild template lists and redraw
+      window.postMessage({ source: 'blue-marble', bmEvent: 'bm-rebuild-template-list' }, '*');
+      overlayMain.handleDisplayStatus('Desactivadas todas las plantillas');
+    });
+
+    actionsRow.appendChild(btnEnableAll);
+    actionsRow.appendChild(btnDisableAll);
+    listContainer.appendChild(actionsRow);
+
     // Build per-template enable toggles
     templates.forEach(t => {
       // If persisted JSON has an enabled flag, sync it to the runtime instance
@@ -825,6 +857,20 @@ function buildOverlayMain() {
       });
 
       row.appendChild(btn);
+
+      // Delete button
+      const del = document.createElement('button');
+      del.className = 'btn btn-danger';
+      del.textContent = 'Eliminar';
+      del.addEventListener('click', async () => {
+        if (!confirm(`Eliminar plantilla "${t.displayName || t.storageKey}"? Esta acción no se puede deshacer.`)) { return; }
+        try {
+          await templateManager.deleteTemplate(t.storageKey);
+          overlayMain.handleDisplayStatus(`Plantilla eliminada: ${t.displayName}`);
+        } catch (e) { overlayMain.handleDisplayError('Error eliminando plantilla'); }
+      });
+
+      row.appendChild(del);
 
       listContainer.appendChild(row);
     });

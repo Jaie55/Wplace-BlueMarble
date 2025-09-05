@@ -197,8 +197,33 @@ export default class TemplateManager {
   /** Deletes a template from the JSON object.
    * Also delete's the corrosponding {@link Template} class instance
    */
-  deleteTemplate() {
 
+  async deleteTemplate(storageKey) {
+
+    if (!storageKey) { return; }
+
+    try {
+      // Remove from persisted JSON
+      if (this.templatesJSON && this.templatesJSON.templates && this.templatesJSON.templates[storageKey]) {
+        delete this.templatesJSON.templates[storageKey];
+      }
+
+      // Remove from runtime array
+      this.templatesArray = (this.templatesArray || []).filter(t => t && t.storageKey !== storageKey);
+
+      // Persist changes
+      await this.#storeTemplates();
+
+      // Notify UI to rebuild lists
+      try {
+        window.postMessage({ source: 'blue-marble', bmEvent: 'bm-rebuild-template-list' }, '*');
+        window.postMessage({ source: 'blue-marble', bmEvent: 'bm-rebuild-color-list' }, '*');
+      } catch (_) {}
+
+      console.log(`Deleted template ${storageKey}`);
+    } catch (e) {
+      consoleError('Failed to delete template:', e);
+    }
   }
 
   /** Disables the template from view
