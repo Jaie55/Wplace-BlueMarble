@@ -557,7 +557,7 @@ function buildOverlayMain() {
       .buildElement()
       // Color filter UI
   .addDiv({'id': 'bm-contain-colorfilter', 'style': 'max-height: 140px; overflow: auto; border: 1px solid rgba(255,255,255,0.1); padding: 4px; border-radius: 4px; display: none;'})
-        .addDiv({'style': 'display: flex; gap: 6px; margin-bottom: 6px;'})
+        .addDiv({'style': 'display: flex; gap: 6px; margin-bottom: 6px; flex-wrap: wrap;'})
           .addButton({'id': 'bm-button-colors-enable-all', 'textContent': 'Activar todo'}, (instance, button) => {
             button.onclick = () => {
               const selectedKey = document.querySelector('#bm-presets-select')?.value;
@@ -569,6 +569,16 @@ function buildOverlayMain() {
               buildColorFilterList();
               instance.handleDisplayStatus('Enabled all colors');
             };
+          }).buildElement()
+          .addButton({'id': 'bm-button-colors-top3', 'textContent': 'Mostrar top 3', 'style': 'margin-left: auto;'}, (instance, button) => {
+            // Toggle between showing only top 3 colors and showing all
+            button.dataset.active = '0';
+            button.addEventListener('click', () => {
+              const active = button.dataset.active === '1';
+              button.dataset.active = active ? '0' : '1';
+              button.textContent = active ? 'Mostrar top 3' : 'Mostrar todo';
+              try { window.buildColorFilterList(); } catch (_) {}
+            });
           }).buildElement()
           .addButton({'id': 'bm-button-colors-disable-all', 'textContent': 'Desactivar todo'}, (instance, button) => {
             button.onclick = () => {
@@ -647,7 +657,7 @@ function buildOverlayMain() {
           //   });
           // }).buildElement()
         .buildElement()
-  .addSmall({'textContent': 'Creado por: SwingTheVine, modificado por Jaie55', 'style': 'margin-top: auto; font-size: 11px;'}).buildElement()
+          .addSmall({'textContent': 'Creado por: SwingTheVine, modificado por Jaie55', 'style': 'margin-top: auto; font-size: 10px;'}).buildElement()
       .buildElement()
     .buildElement()
   .buildOverlay(document.body);
@@ -668,12 +678,17 @@ function buildOverlayMain() {
     const entries = Object.entries(t.colorPalette)
       .sort((a,b) => b[1].count - a[1].count); // sort by frequency desc
 
+    // Determine if top3 mode is active (button toggles it)
+    const top3Btn = document.querySelector('#bm-button-colors-top3');
+    const top3Mode = top3Btn && top3Btn.dataset && top3Btn.dataset.active === '1';
+
     for (const [rgb, meta] of entries) {
       let row = document.createElement('div');
-      row.style.display = 'flex';
-      row.style.alignItems = 'center';
-      row.style.gap = '8px';
-      row.style.margin = '4px 0';
+  row.style.display = 'flex';
+  row.style.flexWrap = 'wrap';
+  row.style.alignItems = 'center';
+  row.style.gap = '8px';
+  row.style.margin = '4px 0';
 
       let swatch = document.createElement('div');
       swatch.style.width = '14px';
@@ -707,7 +722,7 @@ function buildOverlayMain() {
       }
       label.textContent = labelText;
 
-      // append a small 'Volver' button at top when list first builds
+  // append a small 'Volver' button at top when list first builds
       // (we add it once before appending colors)
       if (!document.querySelector('#bm-colorfilter-list .bm-back-button')) {
         const backRow = document.createElement('div');
@@ -727,7 +742,7 @@ function buildOverlayMain() {
         listContainer.appendChild(backRow);
       }
 
-      const toggle = document.createElement('input');
+  const toggle = document.createElement('input');
       toggle.type = 'checkbox';
       toggle.checked = !!meta.enabled;
       toggle.addEventListener('change', () => {
@@ -749,6 +764,12 @@ function buildOverlayMain() {
       row.appendChild(swatch);
       row.appendChild(label);
       listContainer.appendChild(row);
+
+      // If top3 mode is active, stop after adding three color rows
+      if (top3Mode) {
+        const addedRows = listContainer.querySelectorAll('div').length - 1; // subtract back button
+        if (addedRows >= 3) { break; }
+      }
     }
   };
 
