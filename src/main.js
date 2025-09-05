@@ -490,3 +490,45 @@ function buildOverlayTabTemplate() {
     .buildElement()
   .buildOverlay();
 }
+
+// Minimal runtime initialization: create overlay, templateManager and apiManager
+// This ensures the UI is actually constructed when the userscript runs.
+let overlayMain;
+let templateManager;
+let apiManager;
+
+function initializeMinimalUI() {
+  try {
+    // Create primary overlay instance
+    overlayMain = new Overlay(name, version);
+
+    // Build a small visible container so users see the UI
+    overlayMain
+      .addDiv({ id: 'bm-overlay', style: 'position: fixed; top: 10px; right: 10px; z-index: 99999; background: rgba(0,0,0,0.6); color: white; padding: 8px; border-radius: 6px; max-width: 320px;' })
+        .addDiv({ id: 'bm-contain-header', style: 'display:flex; align-items:center; gap:8px;' })
+          .addHeader(3, { textContent: name }).buildElement()
+        .buildElement()
+        .addDiv({ id: 'bm-contain-body', style: 'margin-top:6px; font-size:13px;' })
+          .addP({ textContent: 'Black Marble UI inicializado.' }).buildElement()
+        .buildElement()
+      .buildElement()
+    .buildOverlay(document.body);
+
+    // Create managers and wire them
+    templateManager = new TemplateManager(name, version, overlayMain);
+    apiManager = new ApiManager(templateManager);
+    overlayMain.setApiManager(apiManager);
+
+    // Expose to window for any inline code expecting globals
+    window.overlayMain = overlayMain;
+    window.templateManager = templateManager;
+    window.apiManager = apiManager;
+
+    console.log(`${name}: Minimal UI initialized`);
+  } catch (e) {
+    console.error('Failed to initialize minimal UI', e);
+  }
+}
+
+// Delay initialization slightly to ensure DOM is ready
+setTimeout(initializeMinimalUI, 150);
