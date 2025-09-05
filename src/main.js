@@ -642,7 +642,7 @@ function buildOverlayMain() {
           //   });
           // }).buildElement()
         .buildElement()
-  .addSmall({'textContent': 'Creado por Raw Community', 'style': 'margin-top: auto;'}).buildElement()
+  .addSmall({'textContent': 'Creado por: SwingTheVine, modificado por Jaie55', 'style': 'margin-top: auto;'}).buildElement()
       .buildElement()
     .buildElement()
   .buildOverlay(document.body);
@@ -770,6 +770,13 @@ function buildOverlayMain() {
 
     // Build per-template enable toggles
     templates.forEach(t => {
+      // If persisted JSON has an enabled flag, sync it to the runtime instance
+      try {
+        const stored = templateManager.templatesJSON?.templates?.[t.storageKey];
+        if (stored && typeof stored.enabled !== 'undefined') {
+          t.enabled = !!stored.enabled;
+        }
+      } catch (_) {}
       const row = document.createElement('div');
       row.style.display = 'flex';
       row.style.alignItems = 'center';
@@ -787,11 +794,14 @@ function buildOverlayMain() {
       toggle.checked = !!t.enabled;
       toggle.addEventListener('change', () => {
         t.enabled = toggle.checked;
-        // persist to templatesJSON
+        // persist to templatesJSON and notify other UI pieces
         try {
           if (templateManager.templatesJSON?.templates && t.storageKey) {
             templateManager.templatesJSON.templates[t.storageKey].enabled = !!t.enabled;
             GM.setValue('bmTemplates', JSON.stringify(templateManager.templatesJSON));
+            // Notify color list and template list consumers to rebuild
+            window.postMessage({ source: 'blue-marble', bmEvent: 'bm-rebuild-color-list' }, '*');
+            window.postMessage({ source: 'blue-marble', bmEvent: 'bm-rebuild-template-list' }, '*');
           }
         } catch (_) {}
         overlayMain.handleDisplayStatus(`${toggle.checked ? 'Enabled' : 'Disabled'} ${t.displayName}`);
