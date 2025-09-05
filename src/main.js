@@ -279,7 +279,7 @@ function buildOverlayMain() {
   overlayMain.addDiv({'id': 'bm-overlay', 'style': 'top: 10px; right: 75px;'})
     .addDiv({'id': 'bm-contain-header'})
       .addDiv({'id': 'bm-bar-drag'}).buildElement()
-  .addImg({'alt': 'Black Marble Icon - Click to minimize/maximize', 'src': 'https://raw.githubusercontent.com/Jaie55/Wplace-BlueMarble/main/dist/assets/Favicon.png', 'style': 'cursor: pointer;'}, 
+  .addImg({'alt': 'Black Marble Icon - Click to minimize/maximize', 'src': 'https://i.imgur.com/qP3QpF9.png', 'style': 'cursor: pointer;'}, 
         (instance, img) => {
           /** Click event handler for overlay minimize/maximize functionality.
            * 
@@ -584,13 +584,13 @@ function buildOverlayMain() {
       .buildElement()
   .addInputFile({'id': 'bm-input-file-template', 'textContent': 'Subir plantilla', 'accept': 'image/png, image/jpeg, image/webp, image/bmp, image/gif'}).buildElement()
       .addDiv({'id': 'bm-contain-buttons-template'})
-  .addButton({'id': 'bm-button-enable', 'textContent': 'Activar'}, (instance, button) => {
+  .addButton({'id': 'bm-button-enable', 'textContent': 'Hacer visible plantilla'}, (instance, button) => {
           button.onclick = () => {
             instance.apiManager?.templateManager?.setTemplatesShouldBeDrawn(true);
-            instance.handleDisplayStatus(`Enabled templates!`);
+            instance.handleDisplayStatus(`Plantilla visible`);
           }
         }).buildElement()
-  .addButton({'id': 'bm-button-create', 'textContent': 'Crear'}, (instance, button) => {
+  .addButton({'id': 'bm-button-create', 'textContent': 'Crear plantilla'}, (instance, button) => {
           button.onclick = () => {
             const input = document.querySelector('#bm-input-file-template');
 
@@ -613,13 +613,13 @@ function buildOverlayMain() {
             // console.log(`TCoords: ${apiManager.templateCoordsTilePixel}\nCoords: ${apiManager.coordsTilePixel}`);
             // templateManager.setTemplateImage(input.files[0]);
 
-            instance.handleDisplayStatus(`Drew to canvas!`);
+            instance.handleDisplayStatus(`Plantilla creada`);
           }
         }).buildElement()
-  .addButton({'id': 'bm-button-disable', 'textContent': 'Desactivar'}, (instance, button) => {
+  .addButton({'id': 'bm-button-disable', 'textContent': 'Ocultar plantilla'}, (instance, button) => {
           button.onclick = () => {
             instance.apiManager?.templateManager?.setTemplatesShouldBeDrawn(false);
-            instance.handleDisplayStatus(`Disabled templates!`);
+            instance.handleDisplayStatus(`Plantilla oculta`);
           }
         }).buildElement()
       .buildElement()

@@ -73,9 +73,9 @@ export default class ApiManager {
           }
           this.templateManager.userID = dataJSON['id'];
           
-          overlay.updateInnerHTML('bm-user-name', `Username: <b>${escapeHTML(dataJSON['name'])}</b>`); // Updates the text content of the username field
+            overlay.updateInnerHTML('bm-user-name', `Usuario: <b>${escapeHTML(dataJSON['name'])}</b>`); // Actualiza el nombre de usuario
           overlay.updateInnerHTML('bm-user-droplets', `Droplets: <b>${new Intl.NumberFormat().format(dataJSON['droplets'])}</b>`); // Updates the text content of the droplets field
-          overlay.updateInnerHTML('bm-user-nextlevel', `Next level in <b>${new Intl.NumberFormat().format(nextLevelPixels)}</b> pixel${nextLevelPixels == 1 ? '' : 's'}`); // Updates the text content of the next level field
+            overlay.updateInnerHTML('bm-user-nextlevel', `Siguiente nivel en <b>${new Intl.NumberFormat().format(nextLevelPixels)}</b> ${nextLevelPixels == 1 ? 'píxel' : 'píxeles'}`); // Actualiza el texto del siguiente nivel
           break;
 
         case 'pixel': // Request to retrieve pixel data
