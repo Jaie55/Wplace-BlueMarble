@@ -1,16 +1,20 @@
 /* @since 0.5.1 */
 
-/* The entire overlay */
+/* The entire overlay (dark theme) */
 #bm-overlay, #bm-overlay-telemetry {
   position: fixed;
-  background-color: rgba(21, 48, 99, 0.9);
-  color: white;
-  padding: 10px;
-  border-radius: 8px;
+  background-color: rgba(10, 12, 16, 0.92); /* very dark background */
+  color: #e6eef6; /* light gray text */
+  padding: 12px;
+  border-radius: 10px;
   z-index: 9000;
-  transition: all 0.3s ease, transform 0s;
-  max-width: 300px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.02);
+  transition: all 0.25s ease;
+  max-width: 340px;
   width: auto;
+  font-smooth: antialiased;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   /* Performance optimizations for smooth dragging */
   will-change: transform;
   backface-visibility: hidden;
@@ -42,12 +46,12 @@ div#bm-overlay, div#bm-overlay-telemetry {
 
 /* The drag bar */
 #bm-bar-drag, #bm-bar-drag-telemetry {
-  margin-bottom: 0.5em;
-  /* For background circles, width & height should be odd, cx & cy should be half of width & height, and r should be less than or equal to cx & cy */
-  background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="5" height="5"><circle cx="3" cy="3" r="1.5" fill="CornflowerBlue" /></svg>') repeat;
+  margin-bottom: 0.6em;
+  background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
   cursor: grab;
   width: 100%;
-  height: 1em;
+  height: 1.1em;
+  border-radius: 6px;
 }
 
 /* When the overlay is being dragged */
@@ -92,10 +96,12 @@ div#bm-overlay, div#bm-overlay-telemetry {
 /* The Black Marble image */
 #bm-overlay img {
   display: inline-block;
-  height: 2.5em;
-  margin-right: 1ch;
+  height: 2.2em;
+  margin-right: 0.9ch;
   vertical-align: middle;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  filter: drop-shadow(0 3px 6px rgba(0,0,0,0.6));
+  border-radius: 4px;
 }
 
 /* When overlay is minimized, adjust image styling */
@@ -114,9 +120,11 @@ div#bm-overlay, div#bm-overlay-telemetry {
 /* The Black Marble header */
 #bm-overlay h1, #bm-overlay-telemetry h1 {
   display: inline-block;
-  font-size: x-large;
-  font-weight: bold;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #ffffff;
   vertical-align: middle;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.6);
 }
 
 /* Checkboxes in the automation container */
@@ -175,11 +183,14 @@ div:has(> #bm-button-teleport) {
 #bm-contain-coords input[type="number"] {
   appearance: auto;
   -moz-appearance: textfield;
-  width: 5.5ch;
-  margin-left: 1ch;
-  background-color: rgba(0, 0, 0, 0.2);
-  padding: 0 0.5ch;
-  font-size: small;
+  width: 6ch;
+  margin-left: 0.75ch;
+  background-color: rgba(255,255,255,0.03);
+  color: #e6eef6;
+  border: 1px solid rgba(255,255,255,0.04);
+  padding: 0.15em 0.5ch;
+  font-size: 0.9rem;
+  border-radius: 4px;
 }
 
 /* Removes scroll bar on tile & pixel input fields */
@@ -225,11 +236,14 @@ input[type="file"][id*="template"] {
 
 /* Output status area */
 #bm-output-status {
-  font-size: small;
-  background-color: rgba(0, 0, 0, 0.2);
-  padding: 0 0.5ch;
-  height: 3.75em;
+  font-size: 0.9rem;
+  background-color: rgba(255,255,255,0.02);
+  color: #d7e6f7;
+  padding: 0.5ch;
+  height: 4em;
   width: 100%;
+  border: 1px solid rgba(255,255,255,0.03);
+  border-radius: 6px;
 }
 
 /* The action buttons below the status textarea */
@@ -256,23 +270,29 @@ div:has(> #bm-input-file-template),
 
 /* All overlay buttons */
 #bm-overlay button, #bm-overlay-telemetry button {
-  background-color: #144eb9;
-  border-radius: 1em;
-  padding: 0 0.75ch;
+  background: linear-gradient(180deg, #1f2933, #111418);
+  color: #e6eef6;
+  border: 1px solid rgba(255,255,255,0.04);
+  border-radius: 8px;
+  padding: 0.35em 0.9ch;
+  font-size: 0.95rem;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.35);
 }
 
 /* All overlay buttons when hovered/focused */
 #bm-overlay button:hover, #bm-overlay button:focus-visible, #bm-overlay-telemetry button:hover, #bm-overlay-telemetry button:focus-visible {
-  background-color: #1061e5;
+  background: linear-gradient(180deg, #2b3340, #1a1f26);
+  transform: translateY(-1px);
 }
 
-/* All overlay buttons when pressed (plus disabled color) */
-#bm-overlay button:active, #bm-overlay-telemetry button:active
-#bm-overlay button:disabled, #bm-overlay-telemetry button:disabled {
-  background-color: #2e97ff;
+/* All overlay buttons when pressed */
+#bm-overlay button:active, #bm-overlay-telemetry button:active {
+  transform: translateY(0);
 }
 
-/* All overlay buttons when disabled */
+/* Disabled state */
 #bm-overlay button:disabled, #bm-overlay-telemetry button:disabled {
-  text-decoration: line-through;
+  opacity: 0.45;
+  cursor: not-allowed;
+  text-decoration: none;
 }
