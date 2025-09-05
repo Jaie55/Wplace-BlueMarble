@@ -623,7 +623,7 @@ function buildOverlayMain() {
           }
         }).buildElement()
       .buildElement()
-      .addTextarea({'id': overlayMain.outputStatusId, 'placeholder': `Status: Sleeping...\nVersion: ${version}`, 'readOnly': true}).buildElement()
+  .addTextarea({'id': overlayMain.outputStatusId, 'placeholder': `Estado: Inactivo...\nVersión: ${version}`, 'readOnly': true}).buildElement()
       .addDiv({'id': 'bm-contain-buttons-action'})
         .addDiv()
           // .addButton({'id': 'bm-button-teleport', 'className': 'bm-help', 'textContent': '✈'}).buildElement()
@@ -642,7 +642,7 @@ function buildOverlayMain() {
           //   });
           // }).buildElement()
         .buildElement()
-  .addSmall({'textContent': 'Creado por: SwingTheVine, modificado por Jaie55', 'style': 'margin-top: auto;'}).buildElement()
+  .addSmall({'textContent': 'Creado por: SwingTheVine, modificado por Jaie55', 'style': 'margin-top: auto; font-size: 11px;'}).buildElement()
       .buildElement()
     .buildElement()
   .buildOverlay(document.body);
@@ -755,18 +755,14 @@ function buildOverlayMain() {
     if (!templates.length) { listContainer.style.display = 'none'; return; }
     listContainer.style.display = '';
 
-    // Build a select for choosing active template
-    const select = document.createElement('select');
-    select.id = 'bm-presets-select';
-    select.style.width = '100%';
-    templates.forEach(t => {
-      const opt = document.createElement('option');
-      opt.value = t.storageKey || '';
-      opt.textContent = t.displayName || t.storageKey || 'Template';
-      select.appendChild(opt);
-    });
-    select.addEventListener('change', () => { buildColorFilterList(); });
-    listContainer.appendChild(select);
+  // Build expanded template list (shows all templates and controls)
+  const list = document.createElement('div');
+  list.id = 'bm-presets-expanded';
+  list.style.display = 'flex';
+  list.style.flexDirection = 'column';
+  list.style.gap = '6px';
+  list.style.marginTop = '6px';
+  listContainer.appendChild(list);
 
     // Global template actions: activate all / deactivate all
     const actionsRow = document.createElement('div');
@@ -800,8 +796,8 @@ function buildOverlayMain() {
     actionsRow.appendChild(btnDisableAll);
     listContainer.appendChild(actionsRow);
 
-    // Build per-template enable toggles
-    templates.forEach(t => {
+  // Build per-template rows inside expanded list
+  templates.forEach(t => {
       // If persisted JSON has an enabled flag, sync it to the runtime instance
       try {
         const stored = templateManager.templatesJSON?.templates?.[t.storageKey];
@@ -848,15 +844,58 @@ function buildOverlayMain() {
 
       row.appendChild(left);
 
-      const btn = document.createElement('button');
-      btn.className = 'btn btn-soft';
-  btn.textContent = 'Seleccionar';
-      btn.addEventListener('click', () => {
-        const sel = document.querySelector('#bm-presets-select');
-        if (sel) { sel.value = t.storageKey; buildColorFilterList(); }
+      // Swap show/hide button
+      const swap = document.createElement('button');
+      swap.className = 'btn btn-soft';
+      swap.textContent = t.enabled ? 'Ocultar' : 'Mostrar';
+      swap.addEventListener('click', () => {
+        t.enabled = !t.enabled;
+        try { if (templateManager.templatesJSON?.templates && t.storageKey) { templateManager.templatesJSON.templates[t.storageKey].enabled = !!t.enabled; GM.setValue('bmTemplates', JSON.stringify(templateManager.templatesJSON)); } } catch(_){}
+        swap.textContent = t.enabled ? 'Ocultar' : 'Mostrar';
+        window.postMessage({ source: 'blue-marble', bmEvent: 'bm-rebuild-template-list' }, '*');
+        overlayMain.handleDisplayStatus(`${t.enabled ? 'Mostrando' : 'Ocultando'} ${t.displayName}`);
       });
 
-      row.appendChild(btn);
+      row.appendChild(swap);
+
+      // Expandable controls (edit coords / delete)
+      const controls = document.createElement('div');
+      controls.style.display = 'none';
+      controls.style.gap = '6px';
+
+      const btnEdit = document.createElement('button');
+      btnEdit.className = 'btn btn-soft';
+      btnEdit.textContent = 'Editar posición';
+      btnEdit.addEventListener('click', () => {
+        // Prompt for new coords in format: x,y,x,y
+        const current = templateManager.templatesJSON?.templates?.[t.storageKey]?.coords || '';
+        const val = prompt('Introduce nuevas coordenadas (TlX,TlY,PxX,PxY):', current);
+        if (!val) { return; }
+        const parts = val.split(',').map(s => Number(s.trim()));
+        if (parts.length !== 4 || parts.some(isNaN)) { alert('Coordenadas inválidas'); return; }
+        try {
+          templateManager.templatesJSON.templates[t.storageKey].coords = parts.join(',');
+          GM.setValue('bmTemplates', JSON.stringify(templateManager.templatesJSON));
+          overlayMain.handleDisplayStatus(`Coords actualizadas: ${parts.join(',')}`);
+        } catch (e) { overlayMain.handleDisplayError('Error guardando coordenadas'); }
+      });
+
+      const btnDel = document.createElement('button');
+      btnDel.className = 'btn btn-danger';
+      btnDel.textContent = 'Eliminar';
+      btnDel.addEventListener('click', async () => {
+        if (!confirm(`Eliminar plantilla "${t.displayName || t.storageKey}"? Esta acción no se puede deshacer.`)) { return; }
+        try { await templateManager.deleteTemplate(t.storageKey); overlayMain.handleDisplayStatus(`Plantilla eliminada: ${t.displayName}`); } catch (e) { overlayMain.handleDisplayError('Error eliminando plantilla'); }
+      });
+
+      controls.appendChild(btnEdit);
+      controls.appendChild(btnDel);
+
+      // Toggle controls visibility when label clicked
+      label.style.cursor = 'pointer';
+      label.addEventListener('click', () => { controls.style.display = controls.style.display === 'none' ? 'flex' : 'none'; });
+
+      row.appendChild(controls);
 
       // Delete button
       const del = document.createElement('button');
