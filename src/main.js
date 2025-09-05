@@ -481,6 +481,7 @@ function buildOverlayMain() {
 
   // Template counter indicator (Plantillas: N (M activas))
   .addDiv({'id': 'bm-templates-indicator', 'style': 'margin-top: 4px; font-size: 12px; color: var(--bm-accent);', 'textContent': 'Plantillas: 0 (0 activas)'}).buildElement()
+  .addInput({'type': 'hidden', 'id': 'bm-active-template', 'value': ''}).buildElement()
 
     .addHr().buildElement()
 
@@ -654,8 +655,9 @@ function buildOverlayMain() {
   // ------- Helper: Build the color filter list -------
   window.buildColorFilterList = function buildColorFilterList() {
   const listContainer = document.querySelector('#bm-colorfilter-list');
-  // Determine selected template key
-  const selectedKey = document.querySelector('#bm-presets-select')?.value;
+  // Determine selected template key: prefer explicit active template, then previous select
+  const activeKey = document.querySelector('#bm-active-template')?.value;
+  const selectedKey = activeKey || document.querySelector('#bm-presets-select')?.value;
   const t = templateManager.templatesArray?.find(tm => tm.storageKey === selectedKey) || templateManager.templatesArray?.[0];
     if (!listContainer || !t?.colorPalette) {
       if (listContainer) { listContainer.innerHTML = '<small>No template colors to display.</small>'; }
@@ -704,6 +706,26 @@ function buildOverlayMain() {
           } catch (ignored) {}
       }
       label.textContent = labelText;
+
+      // append a small 'Volver' button at top when list first builds
+      // (we add it once before appending colors)
+      if (!document.querySelector('#bm-colorfilter-list .bm-back-button')) {
+        const backRow = document.createElement('div');
+        backRow.style.display = 'flex';
+        backRow.style.justifyContent = 'flex-end';
+        backRow.style.marginBottom = '6px';
+        const backBtn = document.createElement('button');
+        backBtn.className = 'btn btn-soft bm-back-button';
+        backBtn.textContent = 'Volver';
+        backBtn.addEventListener('click', () => {
+          // clear active template and rebuild template list
+          const act = document.querySelector('#bm-active-template'); if (act) { act.value = ''; }
+          try { window.postMessage({ source: 'blue-marble', bmEvent: 'bm-rebuild-template-list' }, '*'); } catch (_) {}
+          const colorUI = document.querySelector('#bm-contain-colorfilter'); if (colorUI) { colorUI.style.display = 'none'; }
+        });
+        backRow.appendChild(backBtn);
+        listContainer.appendChild(backRow);
+      }
 
       const toggle = document.createElement('input');
       toggle.type = 'checkbox';
@@ -931,6 +953,20 @@ setTimeout(() => { try { createTemplateEditModal(); } catch (_) {} }, 200);
       });
 
       row.appendChild(swap);
+
+      // 'Abrir' button to open per-template color management
+      const openBtn = document.createElement('button');
+      openBtn.className = 'btn btn-soft';
+      openBtn.textContent = 'Abrir';
+      openBtn.addEventListener('click', () => {
+        try {
+          const act = document.querySelector('#bm-active-template'); if (act) { act.value = t.storageKey || ''; }
+          const colorUI = document.querySelector('#bm-contain-colorfilter'); if (colorUI) { colorUI.style.display = ''; }
+          try { window.postMessage({ source: 'blue-marble', bmEvent: 'bm-rebuild-color-list' }, '*'); } catch(_){}
+          overlayMain.handleDisplayStatus(`Abriendo plantilla ${t.displayName}`);
+        } catch (_) { overlayMain.handleDisplayError('No se pudo abrir la plantilla'); }
+      });
+      row.appendChild(openBtn);
 
       // Expandable controls (edit coords / delete)
       const controls = document.createElement('div');

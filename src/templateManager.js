@@ -566,9 +566,18 @@ export default class TemplateManager {
     console.log(`Importing JSON...`);
     console.log(json);
 
-    // If the passed in JSON is a Blue Marble template object...
-    if (json?.whoami == 'BlueMarble') {
-      this.#parseBlueMarble(json); // ...parse the template object as Blue Marble
+    // If the passed in JSON looks like a template object (has templates), parse it.
+    // Historically this code expected whoami === 'BlueMarble', but the script may run
+    // under different names (e.g. 'Black Marble') so prefer presence of `templates`.
+    if (json && typeof json === 'object' && json.templates && typeof json.templates === 'object') {
+      this.#parseBlueMarble(json);
+      return;
+    }
+
+    // Backwards compatibility: if whoami explicitly equals legacy value, parse it too
+    if (json?.whoami === 'BlueMarble') {
+      this.#parseBlueMarble(json);
+      return;
     }
   }
 
