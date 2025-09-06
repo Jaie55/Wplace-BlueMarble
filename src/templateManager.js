@@ -145,7 +145,8 @@ export default class TemplateManager {
       } catch(e){}
     }
 
-    if (templateCount>0) {
+  const totalTemplates = (this.templatesArray || []).length;
+  if (templateCount>0) {
       this.tileProgress.set(padded, { painted, required, wrong });
       let aggPainted=0, aggRequired=0, aggWrong=0; for (const s of this.tileProgress.values()) { aggPainted+=s.painted||0; aggRequired+=s.required||0; aggWrong+=s.wrong||0; }
       const totalRequiredTemplates = this.templatesArray.reduce((s,t)=> s + (t.requiredPixelCount||t.pixelCount||0), 0);
@@ -158,11 +159,11 @@ export default class TemplateManager {
       const missingStr = new Intl.NumberFormat().format(missing);
       const wrongPlacedStr = new Intl.NumberFormat().format(wrongPlaced);
       const extraStr = new Intl.NumberFormat().format(extra);
-      let status = `Mostrando ${templateCount} plantilla${templateCount===1?'':'s'}.`;
-      status += `\nPintados ${paintedStr} / ${requiredStr} • Faltan ${missingStr} • Incorrectos ${wrongPlacedStr}`;
+  let status = `Mostrando ${templateCount} plantilla${templateCount===1?'':'s'} (de ${totalTemplates} cargada${totalTemplates===1?'':'s'}).`;
+  status += `\nPintados ${paintedStr} / ${requiredStr} • Faltan ${missingStr} • Incorrectos ${wrongPlacedStr}`;
       if (extra>0) status += ` • Extra ${extraStr}`;
       this.overlay.handleDisplayStatus(status);
-    } else this.overlay.handleDisplayStatus(`Mostrando ${templateCount} plantillas.`);
+  } else this.overlay.handleDisplayStatus(`Mostrando ${templateCount} plantilla${templateCount===1?'':'s'} (de ${totalTemplates} cargada${totalTemplates===1?'':'s'}).`);
 
     return await canvas.convertToBlob({ type: 'image/png' });
   }

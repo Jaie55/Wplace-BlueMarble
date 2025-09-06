@@ -1864,6 +1864,52 @@ function buildOverlayMain() {
     }, 0);
   } catch (_) {}
 
+  // Runtime fix: ensure the "Gestionar plantillas" control sits directly after the
+  // color filter list and retains full-width styling even if host CSS overrides it.
+  try {
+    setTimeout(() => {
+      try {
+        const manage = document.getElementById('bm-manage-templates');
+        const colorList = document.getElementById('bm-colorfilter-list');
+        const bmC = document.getElementById('bm-c');
+        // Prefer to insert after #bm-c if it exists; otherwise place after color list
+        if (manage) {
+          if (bmC && bmC.parentElement && manage.parentElement !== bmC.parentElement) {
+            bmC.parentElement.insertBefore(manage, bmC.nextSibling);
+          } else if (colorList && colorList.parentElement && manage.parentElement !== colorList.parentElement) {
+            colorList.parentElement.insertBefore(manage, colorList.nextSibling);
+          }
+          // Ensure container displays as block and does not overlap previous buttons
+          try { manage.style.setProperty('display','block','important'); } catch(_){}
+          try { manage.style.setProperty('width','100%','important'); } catch(_){}
+          try { manage.style.setProperty('box-sizing','border-box','important'); } catch(_){}
+          try { manage.style.setProperty('margin-top','8px','important'); } catch(_){}
+          try { manage.style.setProperty('clear','both','important'); } catch(_){}
+          try { manage.style.setProperty('z-index','1','important'); } catch(_){}
+        }
+        // Enforce button styling inline to overcome external overrides
+        const btn = document.getElementById('bm-button-manage-templates');
+        if (btn) {
+          btn.classList.add('bm-manage-fullwidth');
+          try { btn.style.setProperty('display','flex','important'); } catch(_){}
+          // Visual parity with other template buttons: keep a constrained width and center it
+          try { btn.style.setProperty('width','88%','important'); } catch(_){}
+          try { btn.style.setProperty('max-width','420px','important'); } catch(_){}
+          try { btn.style.setProperty('margin','0 auto','important'); } catch(_){}
+          try { btn.style.setProperty('box-sizing','border-box','important'); } catch(_){}
+          try { btn.style.setProperty('padding','8px 10px','important'); } catch(_){}
+          try { btn.style.setProperty('margin-top','6px','important'); } catch(_){}
+          // Remove aggressive inline color/background/border so hover/focus CSS rules apply
+          try { btn.style.removeProperty('background'); } catch(_){}
+          try { btn.style.removeProperty('color'); } catch(_){}
+          try { btn.style.removeProperty('border'); } catch(_){}
+          try { btn.style.setProperty('position','relative','important'); } catch(_){}
+          try { btn.style.removeProperty('transform'); } catch(_){}
+        }
+      } catch(_){}
+    }, 60);
+  } catch(_){}
+
   // ------- Helper: Build the color filter list -------
   window.buildColorFilterList = function buildColorFilterList() {
   const listContainer = document.querySelector('#bm-colorfilter-list');
@@ -2642,17 +2688,32 @@ setTimeout(() => { try { createTemplateEditModal(); } catch (_) {} }, 200);
       return;
     }
 
-    // Ensure exactly one template is selected: prefer persisted selection, otherwise pick first
+    // Sync persisted `selected` flags into runtime templates but do NOT auto-select a template.
+    // Users should be able to view all templates; selection remains optional and is used
+    // only when the user explicitly selects a template (e.g., to populate color filters).
     try {
       const persisted = templateManager.templatesJSON?.templates || {};
-      const anySelected = templates.some(t => t.selected || (persisted[t.storageKey] && persisted[t.storageKey].selected));
-      if (!anySelected && templates.length > 0) {
-        const first = templates[0];
-        try { if (templateManager.templatesJSON?.templates && first.storageKey) { templateManager.templatesJSON.templates[first.storageKey].selected = true; GM.setValue('bmTemplates', JSON.stringify(templateManager.templatesJSON)); } } catch(_){}
-        templates.forEach(x => x.selected = (x.storageKey === first.storageKey));
-        try { const activeInput = document.querySelector('#bm-active-template'); if (activeInput) activeInput.value = first.storageKey; } catch(_){}
+      templates.forEach(t => {
+        try {
+          if (persisted[t.storageKey] && typeof persisted[t.storageKey].selected !== 'undefined') {
+            t.selected = !!persisted[t.storageKey].selected;
+          }
+        } catch(_) {}
+      });
+      // Do not force any template to be selected by default.
+    } catch(_) {}
+    // After syncing persisted selected flags, if there is a persisted selected template
+    // expose it via the canonical active input so the color list can default to it.
+    try {
+      const activeKeyInput = document.querySelector('#bm-active-template');
+      const persistedTemplates = templateManager.templatesJSON?.templates || {};
+      const selectedKey = Object.keys(persistedTemplates).find(k => persistedTemplates[k] && persistedTemplates[k].selected);
+      if (selectedKey && activeKeyInput) {
+        try { activeKeyInput.value = selectedKey; } catch(_){}
+        try { const cf = document.querySelector('#bm-contain-colorfilter'); if (cf) cf.style.display = ''; } catch(_){}
+        try { if (typeof buildColorFilterList === 'function') buildColorFilterList(); } catch(_){}
       }
-    } catch(_){}
+    } catch(_) {}
 
   const list = document.createElement('div');
   list.id = 'bm-presets-expanded';
@@ -2819,11 +2880,18 @@ setTimeout(() => { try { createTemplateEditModal(); } catch (_) {} }, 200);
   // Use material symbol icon instead of text
   selectBtn.innerHTML = '<span class="material-symbols-rounded">radio_button_unchecked</span>';
   // Make the select button compact
-  selectBtn.style.padding = '4px';
-  selectBtn.style.fontSize = '12px';
-  selectBtn.style.height = '30px';
-  selectBtn.style.minWidth = '34px';
-  selectBtn.style.margin = '0';
+  // size/styling moved to CSS (.bm-select-icon)
+  try {
+    selectBtn.style.setProperty('display','inline-flex','important');
+    selectBtn.style.setProperty('flex','0 0 auto','important');
+    selectBtn.style.setProperty('width','auto','important');
+    selectBtn.style.setProperty('max-width','40px','important');
+    selectBtn.style.setProperty('min-width','34px','important');
+    selectBtn.style.setProperty('height','30px','important');
+    selectBtn.style.setProperty('padding','4px','important');
+    selectBtn.style.setProperty('margin','0','important');
+    selectBtn.style.setProperty('box-sizing','border-box','important');
+  } catch(_){}
       selectBtn.addEventListener('click', () => {
         try {
           const isAlreadySelected = !!(t.selected || (templateManager.templatesJSON?.templates?.[t.storageKey] && templateManager.templatesJSON.templates[t.storageKey].selected));
@@ -2883,10 +2951,23 @@ setTimeout(() => { try { createTemplateEditModal(); } catch (_) {} }, 200);
 
   // Only a single delete icon is shown per template row (no 'Ocultar' / 'Abrir' buttons)
   const del = document.createElement('button');
-  del.className = 'btn btn-danger bm-preset-delete';
+  // Use soft button style so size matches the select button and host CSS doesn't force a large danger button
+  del.className = 'btn btn-soft bm-preset-delete';
   del.title = 'Eliminar plantilla';
   del.innerHTML = '<span class="material-symbols-rounded">delete</span>';
-  del.style.margin = '0';
+  // Match visual size of select button
+  // size/styling moved to CSS (.bm-preset-delete)
+  try {
+    del.style.setProperty('display','inline-flex','important');
+    del.style.setProperty('flex','0 0 auto','important');
+    del.style.setProperty('width','auto','important');
+    del.style.setProperty('max-width','40px','important');
+    del.style.setProperty('min-width','34px','important');
+    del.style.setProperty('height','30px','important');
+    del.style.setProperty('padding','4px','important');
+    del.style.setProperty('margin','0','important');
+    del.style.setProperty('box-sizing','border-box','important');
+  } catch(_){}
 
   right.appendChild(selectBtn);
   right.appendChild(del);
@@ -2900,17 +2981,20 @@ setTimeout(() => { try { createTemplateEditModal(); } catch (_) {} }, 200);
         } catch (e) { overlayMain.handleDisplayError('Error eliminando plantilla'); }
       });
 
-      row.appendChild(del);
+  // del is already appended into the 'right' container; do not append twice.
 
       listContainer.appendChild(row);
     });
     // Update template counter after building the list
     try {
-      const total = templates.length;
-      const active = templates.filter(x => x && x.enabled !== false).length;
+      // Compute totals robustly: prefer runtime array but fallback to persisted JSON when
+      // runtime templates may not be fully initialized yet.
+      const persisted = templateManager.templatesJSON?.templates || {};
+      const total = (templates && templates.length) || Object.keys(persisted).length || 0;
+      const active = (templates && templates.filter(x => x && x.enabled !== false).length) || Object.values(persisted).filter(t => t && t.enabled !== false).length || 0;
       const txt = `Plantillas: ${total} (${active} activas)`;
-      try { const indicator = document.querySelector('#bm-templates-indicator'); if (indicator) indicator.textContent = txt; } catch(_){}
-      try { const legacy = document.querySelector('#bm-V'); if (legacy) legacy.textContent = txt; } catch(_){}
+      try { const indicator = document.querySelector('#bm-templates-indicator'); if (indicator) indicator.textContent = txt; } catch(_){ }
+      try { const legacy = document.querySelector('#bm-V'); if (legacy) legacy.textContent = txt; } catch(_){ }
     } catch (_) {}
   };
 

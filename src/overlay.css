@@ -1070,7 +1070,7 @@ div:has(> #bm-input-file-template) > button {
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
-  max-width: calc(100% - 96px) !important; /* leave room for delete button */
+  max-width: calc(100% - 88px) !important; /* leave room for action buttons (smaller) */
   min-width: 0 !important;
 }
 .bm-preset-delete {
@@ -1084,6 +1084,85 @@ div:has(> #bm-input-file-template) > button {
   font-size: 18px !important;
   vertical-align: middle !important;
 }
+
+/* Visual parity between select icon button and delete button inside presets list */
+.bm-select-icon, .bm-preset-delete {
+  padding: 4px !important;
+  font-size: 12px !important;
+  height: 30px !important;
+  min-width: 34px !important;
+  margin: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+}
+
+.bm-select-icon .material-symbols-rounded, .bm-preset-delete .material-symbols-rounded {
+  color: var(--bm-foreground) !important;
+}
+
+/* When a template is selected, give the select button an accent visual (use :is to increase specificity) */
+.bm-select-icon[aria-checked="true"], .bm-select-icon[data-selected="1"] {
+  background: rgba(0,120,215,0.14) !important;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.08) !important;
+}
+
+/* Keep delete button visually small and accessible */
+.bm-preset-delete {
+  background: transparent !important;
+  border: none !important;
+  color: var(--bm-foreground) !important;
+}
+
+/* High-specificity compacting: prevent global full-width button rules from expanding these */
+html body #bm-presets-list .bm-select-icon,
+html body #bm-presets-list .bm-preset-delete,
+html body .bm-preset-row .bm-select-icon,
+html body .bm-preset-row .bm-preset-delete {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  max-width: 40px !important;
+  min-width: 34px !important;
+  box-sizing: border-box !important;
+}
+
+html body #bm-presets-list .bm-select-icon .material-symbols-rounded,
+html body #bm-presets-list .bm-preset-delete .material-symbols-rounded {
+  font-size: 18px !important;
+}
+
+/* Aggressive compacting to defeat any rules that force full-width on .btn */
+html body #bm-presets-list button.btn,
+html body .bm-preset-row > button.btn,
+html body #bm-presets-list .btn.btn-soft,
+html body #bm-presets-list .btn.btn-danger {
+  display: inline-flex !important;
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: 34px !important;
+  max-width: 40px !important;
+  height: 30px !important;
+  padding: 4px !important;
+  margin: 0 !important;
+  white-space: nowrap !important;
+  overflow: visible !important;
+  box-sizing: border-box !important;
+}
+
+/* If host CSS tries to expand buttons via width:100%, override with higher specificity */
+html body #bm-presets-list button.btn[style],
+html body #bm-presets-list button[style].btn {
+  width: auto !important;
+  max-width: 40px !important;
+}
+
+/* Ensure the right container stays tight and does not stretch buttons */
+html body .bm-preset-row > div:first-child {
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+}
+
 
 /* Specific adjustments for legacy container #bm-1p (provided HTML) */
 #bm-1p {
