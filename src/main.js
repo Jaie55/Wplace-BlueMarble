@@ -1598,12 +1598,12 @@ function buildOverlayMain() {
         panel.appendChild(uploadWrapper);
 
         // Add the presets container which will be populated by buildTemplatePresetList()
-        const presets = document.createElement('div');
-        presets.id = 'bm-presets-list';
-        presets.style.marginTop = '12px';
-        presets.style.display = 'block';
-        presets.style.maxHeight = '220px';
-        presets.style.overflow = 'auto';
+  const presets = document.createElement('div');
+  presets.id = 'bm-presets-list';
+  // visual/layout controlled via CSS in src/overlay.css (max-height, overflow)
+  // keep minimal inline spacing to avoid host interference
+  presets.style.marginTop = '12px';
+  presets.style.display = 'block';
         panel.appendChild(presets);
 
         // If any stray #bm-presets-list exists elsewhere in the DOM (from older builds),

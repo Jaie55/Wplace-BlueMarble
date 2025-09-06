@@ -1020,10 +1020,14 @@ html body .bm-D#bm-m::after, html body .bm-D#bm-S::after {
   display: block !important;
   gap: 6px !important;
   margin-top: 8px !important;
-  /* Ensure the presets container doesn't force a scrollbar */
-  overflow: visible !important;
-  max-height: none !important;
+  /* Limit height so only two preset rows are visible; enable vertical scrolling for more */
+  /* Approx row height: icon (30px) + vertical padding (12px) = ~42px; two rows + gap (6px) = 90px */
+  max-height: 92px !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
   padding: 0 !important;
+  box-sizing: border-box !important;
+  -webkit-overflow-scrolling: touch !important;
 }
 
 /* Ensure file input and upload button align and don't overflow */
@@ -1161,6 +1165,48 @@ html body #bm-presets-list button[style].btn {
 html body .bm-preset-row > div:first-child {
   flex: 1 1 0 !important;
   min-width: 0 !important;
+}
+
+/* SAFETY: prevent any horizontal scrollbar caused by focus/border changes on last item
+   Force the presets list to hide horizontal overflow and reserve exact space for the action column. */
+html body #bm-presets-list {
+  /* Final high-specificity guarantee: limit to 2 rows and allow vertical scroll only */
+  max-height: 92px !important; /* approx two rows (adjustable) */
+  overflow-y: auto !important;
+  overflow-x: hidden !important; /* hide horizontal scroll if any child tries to exceed */
+  box-sizing: border-box !important;
+}
+
+/* Ensure each preset row cannot grow horizontally past container and will not produce horizontal scrollbar */
+.bm-preset-row {
+  overflow-x: hidden !important;
+}
+
+/* Strong guarantee for the right action column: fixed width, no shrink, no wrap */
+.bm-presets-row-right {
+  flex: 0 0 64px !important;
+  width: 64px !important;
+  min-width: 64px !important;
+  max-width: 64px !important;
+  overflow: visible !important; /* icons must remain visible */
+}
+
+/* Neutralize any focus/active outlines or box-shadow that could visually expand elements
+   Use high specificity to override page styles but keep an accessible outline via box-shadow inset. */
+html body #bm-presets-list .bm-select-icon:focus,
+html body #bm-presets-list .bm-preset-delete:focus,
+html body #bm-presets-list .bm-select-icon:active,
+html body #bm-presets-list .bm-preset-delete:active {
+  outline: none !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+/* If accessibility focus is desired, use an inset outline that doesn't affect layout */
+html body #bm-presets-list .bm-select-icon:focus-visible,
+html body #bm-presets-list .bm-preset-delete:focus-visible {
+  outline: none !important;
+  box-shadow: inset 0 0 0 2px rgba(250,78,73,0.9) !important; /* visual focus without layout shift */
 }
 
 

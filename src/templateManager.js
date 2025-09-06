@@ -48,7 +48,21 @@ export default class TemplateManager {
   if (!this.templatesJSON) this.templatesJSON = await this.createJSON();
   if (!this.templatesJSON.templates || typeof this.templatesJSON.templates !== 'object') this.templatesJSON.templates = {};
     this.overlay.handleDisplayStatus(`Creando plantilla en ${coords.join(', ')}...`);
-    const template = new Template({ displayName: name, sortID: this.templatesArray.length || 0, authorID: numberToEncoded(this.userID || 0, this.encodingBase), file: blob, coords });
+    // Compute a unique sortID to avoid collisions when templates are deleted/added.
+    // Use the max existing sortID (from runtime array and persisted JSON keys) + 1.
+    let newSortID = 0;
+    try {
+      const runtimeIds = (this.templatesArray || []).map(t => Number(t.sortID || 0)).filter(n => !Number.isNaN(n));
+      const persistedIds = Object.keys(this.templatesJSON?.templates || {}).map(k => {
+        const p = (k || '').toString().split(' ')[0];
+        return Number(p || 0);
+      }).filter(n => !Number.isNaN(n));
+      const allIds = runtimeIds.concat(persistedIds);
+      newSortID = allIds.length ? (Math.max(...allIds) + 1) : 0;
+    } catch (_) {
+      newSortID = (this.templatesArray && this.templatesArray.length) ? this.templatesArray.length : 0;
+    }
+    const template = new Template({ displayName: name, sortID: newSortID, authorID: numberToEncoded(this.userID || 0, this.encodingBase), file: blob, coords });
     const { templateTiles, templateTilesBuffers } = await template.createTemplateTiles(this.tileSize);
     template.chunked = templateTiles; template.storageKey = `${template.sortID} ${template.authorID}`;
     try {
