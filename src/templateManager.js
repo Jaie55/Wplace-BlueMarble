@@ -265,6 +265,7 @@ export default class TemplateManager {
       } catch(e){ console.warn('template import failed',e); }
     }
     try { const colorUI = document.querySelector('#bm-contain-colorfilter'); if (colorUI) colorUI.style.display=''; window.postMessage({ source:'blue-marble', bmEvent:'bm-rebuild-color-list' }, '*'); } catch(_){ }
+  try { window.postMessage({ source: 'blue-marble', bmEvent: 'bm-rebuild-template-list' }, '*'); } catch(_){}
   }
 
   // Placeholder for OSU import

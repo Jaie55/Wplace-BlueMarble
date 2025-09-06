@@ -2513,15 +2513,18 @@ function buildOverlayMain() {
             if (!lockBtn) return; // not locked
             if (!spaceDown) return; // only enforce when painting via space
             _bm_activePointerId = (evt.pointerId !== undefined) ? evt.pointerId : null;
-            // decide once for this stroke
+            // Decide whether this stroke is allowed: block the entire stroke start if initial point isn't allowed.
             const allowed = pointIsAllowedOnCanvas(evt);
-            try { if (window._bm_debugLock) console.debug('BM_DEBUG pointerdown', {id: evt.pointerId, x: evt.clientX, y: evt.clientY, allowed}); } catch(_){}
-            _bm_strokeAllowed = !!allowed;
+            try { if (window._bm_debugLock) console.debug('BM_DEBUG pointerdown', {id: evt.pointerId, x: evt.clientX, y: evt.clientY, allowed}); } catch(_){ }
             if (!allowed) {
-              evt.stopImmediatePropagation(); evt.preventDefault();
-              try { overlayMain.handleDisplayStatus('Blocked paint: not a selected template color'); } catch(_){}
+              // Prevent starting the stroke when Space is held and cursor not on allowed template pixel
+              try { overlayMain.handleDisplayStatus('Bloqueado: posición no coincide con un color seleccionado en la plantilla'); } catch(_){ }
+              try { evt.stopImmediatePropagation(); evt.preventDefault(); } catch(_){ }
+              _bm_strokeAllowed = false;
               return false;
             }
+            // Allowed: mark stroke as allowed and let pointermove paint the following pixels (which are still checked per-move)
+            _bm_strokeAllowed = true;
           } catch(_){}
         };
 
@@ -2537,7 +2540,7 @@ function buildOverlayMain() {
             try { if (window._bm_debugLock) console.debug('BM_DEBUG pointermove', {id: evt.pointerId, x: evt.clientX, y: evt.clientY, allowed}); } catch(_){}
             if (!allowed) {
               evt.stopImmediatePropagation(); evt.preventDefault();
-              try { overlayMain.handleDisplayStatus('Blocked paint: not a selected template color'); } catch(_){}
+              try { overlayMain.handleDisplayStatus('Bloqueado: posición no coincide con un color seleccionado en la plantilla'); } catch(_){ }
               return false;
             }
             // allowed -> do nothing and let page handlers run
