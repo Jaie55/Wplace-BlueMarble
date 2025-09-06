@@ -549,13 +549,13 @@ export default class Overlay {
    * @since 0.8.2
   */
   handleDrag(moveMe, iMoveThings) {
-    let isDragging = false;
-    let offsetX, offsetY = 0;
-    let animationFrame = null;
-    let currentX = 0;
-    let currentY = 0;
-    let targetX = 0;
-    let targetY = 0;
+  let isDragging = false;
+  let offsetX = 0, offsetY = 0;
+  let animationFrame = null;
+  let currentX = 0;
+  let currentY = 0;
+  let targetX = 0;
+  let targetY = 0;
 
     // Retrieves the elements (allows either '#id' or 'id' to be passed in)
     moveMe = document.querySelector(moveMe?.[0] == '#' ? moveMe : '#' + moveMe);
@@ -569,59 +569,51 @@ export default class Overlay {
 
     // Smooth animation loop using requestAnimationFrame for optimal performance
     const updatePosition = () => {
-      if (isDragging) {
-        // Update immediately for snappy drag behavior
-        if (currentX !== targetX || currentY !== targetY) {
-          currentX = targetX;
-          currentY = targetY;
-          // Use CSS transform for GPU acceleration instead of left/top
-          moveMe.style.transform = `translate(${currentX}px, ${currentY}px)`;
-          moveMe.style.left = '0px';
-          moveMe.style.top = '0px';
-          moveMe.style.right = '';
-        }
-
-        animationFrame = requestAnimationFrame(updatePosition);
+      if (!isDragging) { return; }
+      // Only update DOM when position changed
+      if (currentX !== targetX || currentY !== targetY) {
+        currentX = targetX;
+        currentY = targetY;
+        // Use GPU-accelerated transform. We keep the element positioned at top-left
+        // of the viewport and translate it to the desired coordinates.
+        moveMe.style.transform = `translate(${currentX}px, ${currentY}px)`;
       }
+
+      animationFrame = requestAnimationFrame(updatePosition);
     };
 
     // Cache initial position to avoid expensive getBoundingClientRect calls during drag
     let initialRect = null;
-    
+
     const startDrag = (clientX, clientY) => {
       isDragging = true;
       initialRect = moveMe.getBoundingClientRect();
+
+      // Convert pointer into an offset relative to the element's top-left
       offsetX = clientX - initialRect.left;
       offsetY = clientY - initialRect.top;
-      
-      // Get current position from transform or use element position
-      const computedStyle = window.getComputedStyle(moveMe);
-      const transform = computedStyle.transform;
-      
-      if (transform && transform !== 'none') {
-        const matrix = new DOMMatrix(transform);
-        currentX = matrix.m41;
-        currentY = matrix.m42;
-      } else {
-        // Start transforms from 0 to keep movement consistent and avoid jumps
-        currentX = 0;
-        currentY = 0;
-        // Anchor the element visually at its current rect while using transforms
-        moveMe.style.left = initialRect.left + 'px';
-        moveMe.style.top = initialRect.top + 'px';
-      }
-      
+
+      // Anchor element to viewport origin and place it visually at its current rect
+      // so translate() can be used with absolute coordinates (viewport pixels).
+      moveMe.style.position = 'fixed';
+      moveMe.style.left = '0px';
+      moveMe.style.top = '0px';
+      moveMe.style.right = '';
+  // Hint browser to create a composited layer for smooth transforms
+  moveMe.style.willChange = 'transform';
+      moveMe.style.transform = `translate(${initialRect.left}px, ${initialRect.top}px)`;
+
+      // Initialize coordinates (absolute viewport coordinates)
+      currentX = initialRect.left;
+      currentY = initialRect.top;
       targetX = currentX;
       targetY = currentY;
-      
+
       document.body.style.userSelect = 'none';
       iMoveThings.classList.add('dragging');
-      
-      // Start animation loop
-      if (animationFrame) {
-        cancelAnimationFrame(animationFrame);
-      }
-      updatePosition();
+
+      if (animationFrame) { cancelAnimationFrame(animationFrame); }
+      animationFrame = requestAnimationFrame(updatePosition);
     };
 
     const endDrag = () => {
@@ -631,6 +623,8 @@ export default class Overlay {
         animationFrame = null;
       }
       document.body.style.userSelect = '';
+  // Remove compositing hint
+  try { moveMe.style.willChange = ''; } catch (e) {}
       iMoveThings.classList.remove('dragging');
     };
 
@@ -682,7 +676,7 @@ export default class Overlay {
   handleDisplayStatus(text) {
     const consoleInfo = console.info; // Creates a copy of the console.info function
     consoleInfo(`${this.name}: ${text}`); // Outputs something like "ScriptName: text" as an info message to the console
-    this.updateInnerHTML(this.outputStatusId, 'Status: ' + text, true); // Update output Status box
+  this.updateInnerHTML(this.outputStatusId, 'Estado: ' + text, true); // Update output Status box
   }
 
   /** Handles error display.

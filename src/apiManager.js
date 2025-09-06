@@ -20,6 +20,41 @@ export default class ApiManager {
     this.templateCoordsTilePixel = []; // Contains the last "enabled" template coords
   }
 
+  /** Internal handler for 'me' responses to update UI and templateManager state.
+   * @param {Object} dataJSON - JSON data from /me
+   * @param {Overlay} overlay - Overlay instance to update
+   * @since 0.11.40
+   */
+  _handleMeResponse(dataJSON, overlay) {
+    if (!dataJSON) { return; }
+
+    // If the game can not retrieve the userdata...
+    if (dataJSON['status'] && dataJSON['status']?.toString()[0] != '2') {
+      overlay.handleDisplayError(`You are not logged in!\nCould not fetch userdata.`);
+      return;
+    }
+
+    const level = Number(dataJSON['level'] || 0);
+    const pixelsPainted = Number(dataJSON['pixelsPainted'] || 0);
+    const droplets = Number(dataJSON['droplets'] || 0);
+
+    // Protect against NaN
+    const nextLevelPixels = Number.isFinite(level) && Number.isFinite(pixelsPainted)
+      ? Math.ceil(Math.pow(Math.floor(level) * Math.pow(30, 0.65), (1/0.65)) - pixelsPainted)
+      : 0;
+
+    this.templateManager.userID = dataJSON['id'];
+
+    // Update overlay safely; ensure elements exist
+    try {
+      overlay.updateInnerHTML('bm-user-name', `Usuario: <b>${escapeHTML(dataJSON['name'] || '-')}</b>`);
+      overlay.updateInnerHTML('bm-user-droplets', `Gotas: <b>${new Intl.NumberFormat().format(droplets)}</b>`);
+      overlay.updateInnerHTML('bm-user-nextlevel', `Siguiente nivel en <b>${new Intl.NumberFormat().format(Math.max(0, nextLevelPixels))}</b> ${nextLevelPixels == 1 ? 'píxel' : 'píxeles'}`);
+    } catch (e) {
+      consoleError('Failed to update overlay user info:', e);
+    }
+  }
+
   /** Determines if the spontaneously received response is something we want.
    * Otherwise, we can ignore it.
    * Note: Due to aggressive compression, make your calls like `data['jsonData']['name']` instead of `data.jsonData.name`
@@ -51,32 +86,9 @@ export default class ApiManager {
       // Each case is something that Blue Marble can use from the fetch.
       // For instance, if the fetch was for "me", we can update the overlay stats
       switch (endpointText) {
-
         case 'me': // Request to retrieve user data
-
-          // If the game can not retrieve the userdata...
-          if (dataJSON['status'] && dataJSON['status']?.toString()[0] != '2') {
-            // The server is probably down (NOT a 2xx status)
-            
-            overlay.handleDisplayError(`You are not logged in!\nCould not fetch userdata.`);
-            return; // Kills itself before attempting to display null userdata
-          }
-
-          const nextLevelPixels = Math.ceil(Math.pow(Math.floor(dataJSON['level']) * Math.pow(30, 0.65), (1/0.65)) - dataJSON['pixelsPainted']); // Calculates pixels to the next level
-
-          console.log(dataJSON['id']);
-          if (!!dataJSON['id'] || dataJSON['id'] === 0) {
-            console.log(numberToEncoded(
-              dataJSON['id'],
-              '!#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~'
-            ));
-          }
-          this.templateManager.userID = dataJSON['id'];
-          
-            // Mostrar nombre (preservando acentos), gotas y pixeles restantes con acentos correctos
-            overlay.updateInnerHTML('bm-user-name', `Usuario: <b>${escapeHTML(dataJSON['name'])}</b>`);
-            overlay.updateInnerHTML('bm-user-droplets', `Gotas: <b>${new Intl.NumberFormat().format(dataJSON['droplets'])}</b>`);
-            overlay.updateInnerHTML('bm-user-nextlevel', `Siguiente nivel en <b>${new Intl.NumberFormat().format(nextLevelPixels)}</b> ${nextLevelPixels == 1 ? 'píxel' : 'píxeles'}`);
+          // Delegate to shared handler which also puede ser usada por llamadas directas
+          try { this._handleMeResponse(dataJSON, overlay); } catch (e) { overlay.handleDisplayError('Failed to parse userdata'); }
           break;
 
         case 'pixel': // Request to retrieve pixel data
@@ -105,11 +117,30 @@ export default class ApiManager {
               
               // If we could not find the addition coord span, we make it then update the textContent with the new coords
               if (!displayCoords) {
-                displayCoords = document.createElement('span');
-                displayCoords.id = 'bm-display-coords';
-                displayCoords.textContent = text;
-                displayCoords.style = 'margin-left: calc(var(--spacing)*3); font-size: small;';
-                element.parentNode.parentNode.parentNode.insertAdjacentElement('afterend', displayCoords);
+                  // create a fresh span and replace any existing to avoid host pseudo/overrides
+                  const fresh = document.createElement('span');
+                  // use the same id other code expects
+                  fresh.id = 'bm-display-coords';
+                  fresh.textContent = text;
+                  fresh.setAttribute('data-bm-force','1');
+                  // inline styles (explicit properties)
+                  fresh.style.marginLeft = 'calc(var(--spacing)*3)';
+                  fresh.style.fontSize = 'small';
+                  fresh.style.padding = '.25ch .6ch';
+                  fresh.style.borderRadius = '6px';
+                  fresh.style.border = '1px solid rgba(0,0,0,0.06)';
+                  fresh.style.mixBlendMode = 'normal';
+                  fresh.style.backgroundBlendMode = 'normal';
+                  fresh.style.isolation = 'isolate';
+                  fresh.style.backdropFilter = 'none';
+                  fresh.style.filter = 'none';
+                  fresh.style.opacity = '1';
+                  fresh.style.backgroundImage = 'none';
+                  fresh.style.setProperty('background-color', '#ffffff', 'important');
+                  fresh.style.setProperty('color', '#000000', 'important');
+                  // replace existing if present
+                  const existing = document.querySelector('#bm-display-coords');
+                  if(existing) existing.replaceWith(fresh); else element.parentNode.parentNode.parentNode.insertAdjacentElement('afterend', fresh);
               } else {
                 displayCoords.textContent = text;
               }

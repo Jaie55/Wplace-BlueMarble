@@ -13,7 +13,7 @@
   z-index: 9000;
   box-shadow: 0 8px 26px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.02);
   transition: all 0.25s ease;
-  max-width: 340px;
+  max-width: 420px;
   width: auto;
   font-smooth: antialiased;
   -webkit-font-smoothing: antialiased;
@@ -55,6 +55,38 @@ div#bm-overlay, div#bm-overlay-telemetry {
   width: 100%;
   height: 1.1em;
   border-radius: 6px;
+}
+
+/* Make the drag bar visually grabable: add a subtle accent line centered horizontally
+   Target both semantic and minified IDs so it applies in all builds (#bm-bar-drag and #bm-z).
+*/
+#bm-bar-drag, #bm-z, #bm-bar-drag-telemetry, #bm-z-telemetry {
+  position: relative; /* allow pseudo-element */
+}
+
+#bm-bar-drag::before, #bm-z::before, #bm-bar-drag-telemetry::before, #bm-z-telemetry::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 46%;
+  height: 4px;
+  border-radius: 3px;
+  /* Use explicit fallback color #FA4E49 (accent) to guarantee visibility even if var is not inherited */
+  background: linear-gradient(90deg, var(--bm-accent, #FA4E49), rgba(250,78,73,0.22));
+  box-shadow: 0 1px 0 rgba(0,0,0,0.45) inset, 0 0 10px rgba(250,78,73,0.06);
+  opacity: 1;
+  z-index: 2; /* make sure it's above the dark background */
+  mix-blend-mode: normal;
+  pointer-events: none; /* don't interfere with dragging */
+}
+
+/* Slightly stronger accent when hovering the drag bar */
+#bm-bar-drag:hover::before, #bm-z:hover::before, #bm-bar-drag-telemetry:hover::before, #bm-z-telemetry:hover::before {
+  transform: translate(-50%, -50%) scaleX(1.04);
+  height: 5px;
+  opacity: 1;
 }
 
 /* When the overlay is being dragged */
@@ -152,6 +184,15 @@ div#bm-overlay, div#bm-overlay-telemetry {
   padding: 0 !important; /* Overrides the padding in "#bm-overlay button" */
 }
 
+/* Small icon variant for tight action buttons */
+.bm-small-icon .material-symbols-rounded {
+  font-size: 14px !important;
+}
+
+/* Ensure there's padding between icon and button border to avoid overlap with red outline */
+.bm-help { padding: 6px 8px !important; }
+.bm-help .material-symbols-rounded { display: inline-block; vertical-align: middle; }
+
 /* Pin button */
 #bm-button-coords {
   vertical-align: middle;
@@ -162,6 +203,40 @@ div#bm-overlay, div#bm-overlay-telemetry {
   width: 50%;
   margin: 0 auto;
   fill: #111;
+}
+
+/* Normalize the three small action buttons (top3, coords, lock) */
+.bm-action-btn {
+  width: 40px;
+  height: 40px;
+  padding: 6px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 6px !important;
+  background: rgba(255,255,255,0.03) !important;
+  border: 1px solid rgba(255,255,255,0.04) !important;
+}
+
+/* High-specificity override to protect action buttons from other rules */
+html body #bm-overlay .bm-action-btn,
+html body .bm-action-btn,
+#bm-9 .bm-action-btn,
+#bm-contain-coords .bm-action-btn {
+  width: 40px !important;
+  height: 40px !important;
+  min-width: 40px !important;
+  min-height: 40px !important;
+  padding: 6px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Ensure top3 button is visible despite other overrides */
+.bm-top3-icon, #bm-button-colors-top3 {
+  display: flex !important;
+  visibility: visible !important;
 }
 
 /* Container for action buttons, that is inside the action button container */
@@ -183,17 +258,31 @@ div:has(> #bm-button-teleport) {
 }
 
 /* Tile (x, y) & Pixel (x, y) input fields */
+
+/* Coordinate display badge (inline span #bm-h) should have white background for readability */
+#bm-h {
+  display: inline-block;
+  font-size: .85rem;
+  margin-left: .6ch;
+  background: #FFFFFF !important; /* white background requested */
+  color: #000000 !important; /* black text for contrast */
+  padding: .25ch .6ch !important;
+  border-radius: 6px !important;
+  border: 1px solid rgba(0,0,0,0.06) !important;
+}
 #bm-contain-coords input[type="number"] {
   appearance: auto;
   -moz-appearance: textfield;
-  width: 6ch;
-  margin-left: 0.75ch;
-  background-color: rgba(255,255,255,0.03);
-  color: #e6eef6;
-  border: 1px solid rgba(255,255,255,0.04);
-  padding: 0.15em 0.5ch;
-  font-size: 0.9rem;
-  border-radius: 4px;
+  width: 7.5ch !important; /* slightly wider */
+  min-width: 6ch !important;
+  margin-left: 0.5ch !important;
+  background-color: rgba(255,255,255,0.03) !important;
+  color: #e6eef6 !important;
+  border: 1px solid rgba(255,255,255,0.04) !important;
+  padding: 0.25em 0.6ch !important;
+  font-size: 0.95rem !important;
+  border-radius: 4px !important;
+  box-sizing: border-box !important;
 }
 
 /* Removes scroll bar on tile & pixel input fields */
@@ -344,6 +433,12 @@ div:has(> #bm-input-file-template),
 .bm-modal-form input { width: 100%; padding: 6px; background: #111; color: #fff; border: 1px solid rgba(255,255,255,0.06); }
 .bm-modal-form label { color: #ccc; }
 
+/* Make modal content wider to match overlay */
+.bm-modal-content {
+  width: 420px !important;
+  max-width: calc(100% - 48px) !important;
+}
+
 /* Make username / droplets / next-level numbers use the accent for the value so they're more visible */
 #bm-u b, #bm-p b, #bm-i b,
 #bm-user-name b, #bm-user-droplets b, #bm-user-nextlevel b {
@@ -369,6 +464,14 @@ div:has(> #bm-input-file-template),
   width: 88%;
   max-width: 240px;
   align-self: center;
+}
+
+/* Buttons inside the small color-enable container should keep natural width (no forced 88%) */
+#bm-9 .bm-small-action, #bm-9 > button.bm-small-action {
+  width: auto !important;
+  max-width: none !important;
+  align-self: center !important;
+  padding: 0.35em 0.9ch !important;
 }
 
 /* Ensure help-style buttons (.bm-help/.bm-D) keep icons small and centered */
@@ -565,4 +668,467 @@ html body div:has(> #bm-input-file-template) > button {
 html body #bm-overlay button:focus {
   outline: 2px solid rgba(250,78,73,0.9) !important;
   outline-offset: 2px !important;
+}
+
+/* High-specificity fixes: force show/size for top3 and lock buttons (canonical + minified fallbacks) */
+html body #bm-overlay .bm-top3-icon,
+html body #bm-overlay #bm-button-colors-top3,
+html body .bm-1q, html body #bm-W, html body .bm-1F, html body #bm-1O, html body #bm-1G, html body #bm-1I {
+  display: flex !important;
+  visibility: visible !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Force consistent sizing for action buttons inside coords and color controls */
+html body #bm-contain-coords button,
+html body #bm-contain-coords .bm-lock-icon,
+html body #bm-contain-coords .bm-top3-icon,
+html body #bm-9 button.bm-small-action,
+html body #bm-9 .bm-small-action,
+html body #bm-9 .bm-1j {
+  width: 40px !important;
+  height: 40px !important;
+  min-width: 40px !important;
+  min-height: 40px !important;
+  padding: 6px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+}
+
+/* Ensure coordinate inputs are not shrunk by general final overrides */
+html body #bm-contain-coords input[type="number"],
+html body #bm-contain-coords input[type="text"] {
+  width: 8.5ch !important;
+  min-width: 6.5ch !important;
+  padding: 0.28em 0.6ch !important;
+  font-size: 0.95rem !important;
+}
+
+/* Explicit rules for minified DOM IDs seen in runtime to avoid layout breakage */
+html body #bm-A {
+  max-width: 520px !important;
+  min-width: 360px !important;
+  width: auto !important;
+  padding: 12px !important;
+}
+
+html body #bm-k {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+/* Force equal sizes for the 3 action buttons shown in the DOM (minified ids) */
+html body #bm-W, html body #bm-q, html body #bm-Y,
+html body #bm-button-colors-top3, html body #bm-button-coords, html body #bm-button-colors-lock {
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  min-height: 36px !important;
+  padding: 6px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+}
+
+/* Ensure coordinate inputs inside the minified DOM have sensible width and don't overflow */
+html body #bm-v, html body #bm-w, html body #bm-x, html body #bm-y {
+  width: 6.5ch !important;
+  min-width: 5.5ch !important;
+  box-sizing: border-box !important;
+  padding: 0.25em 0.5ch !important;
+}
+
+/* If inputs still overflow, allow them to wrap to next line cleanly */
+html body #bm-k input[type="number"] {
+  flex: 0 0 auto !important;
+}
+
+/* Prevent color list overflowing and force internal scrolling if content is large */
+#bm-contain-colorfilter {
+  max-width: 520px !important; /* reasonable default for modal */
+  overflow: hidden !important;
+}
+#bm-colorfilter-list {
+  max-height: 360px !important; /* limit height and allow scrolling */
+  overflow: auto !important;
+  box-sizing: border-box !important;
+}
+
+/* Ensure enable/disable all buttons keep a large tappable size but restrained font */
+#bm-3, #bm-0, html body #bm-button-enable, html body #bm-button-disable {
+  height: 48px !important;
+  min-width: 140px !important;
+  padding: 8px !important;
+  font-size: 14px !important;
+  line-height: 1 !important;
+  box-sizing: border-box !important;
+}
+
+/* Ensure color filter entries wrap nicely and don't push out of modal */
+#bm-colorfilter-list > * {
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* High-specificity emergency overrides to fix runtime layout issues seen after maximize */
+html body #bm-A, html body div#bm-A {
+  max-width: 520px !important;
+  min-width: 360px !important;
+  width: auto !important;
+}
+
+/* Ensure the large enable/disable buttons keep intended inline sizing (avoid full-width rule collision) */
+html body #bm-3, html body #bm-0 {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: auto !important;
+  height: 48px !important;
+  min-width: 140px !important;
+  padding: 8px 12px !important;
+  font-size: 14px !important;
+  line-height: 1 !important;
+  box-sizing: border-box !important;
+}
+
+/* Normalize header action icons font-size and prevent oversized text */
+html body #bm-W, html body #bm-q, html body #bm-X,
+html body #bm-button-colors-top3, html body #bm-button-coords, html body #bm-button-colors-lock {
+  font-size: 14px !important;
+  line-height: 1 !important;
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  padding: 6px !important;
+  box-sizing: border-box !important;
+}
+
+/* If host CSS forces template buttons to 100% width, undo for our specific ids */
+html body #bm-3[style], html body #bm-0[style] {
+  width: auto !important;
+}
+
+/* Ensure color filter list won't grow the modal horizontally */
+html body #bm-contain-colorfilter, html body #bm-colorfilter-list {
+  max-width: 520px !important;
+  overflow: auto !important;
+}
+
+/* Emergency fixes: ensure enable/disable buttons sit side-by-side and do not expand full width */
+html body #bm-9 > div,
+html body #bm-9 > div[style],
+html body #bm-9 > .bm-1j,
+html body #bm-9 > .bm-1o {
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 8px !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+}
+
+html body #bm-9 #bm-3, html body #bm-9 #bm-0,
+html body #bm-3, html body #bm-0 {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: auto !important;
+  height: 48px !important;
+  min-width: 140px !important;
+  padding: 8px 12px !important;
+  font-size: 13px !important;
+  line-height: 1 !important;
+  box-sizing: border-box !important;
+}
+
+/* Normalize header action icons font-size and dimensions with highest specificity */
+html body #bm-A .bm-action-btn,
+html body #bm-A #bm-q, html body #bm-A #bm-W, html body #bm-A #bm-X,
+html body #bm-button-colors-top3, html body #bm-button-coords, html body #bm-button-colors-lock {
+  font-size: 14px !important;
+  line-height: 1 !important;
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  padding: 6px !important;
+  box-sizing: border-box !important;
+}
+
+/* Ensure color list containers cannot push modal wider */
+html body #bm-9, html body #bm-g, html body #bm-contain-colorfilter, html body #bm-colorfilter-list {
+  max-width: 520px !important;
+  overflow: auto !important;
+  box-sizing: border-box !important;
+}
+
+/* Template manager panel styling (added for the new 'Gestionar plantillas' UI) */
+#bm-manage-templates-panel {
+  background: rgba(11,11,11,0.9) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.6) !important;
+  padding: 8px !important;
+  color: #e6eef6 !important;
+  margin-top: 8px !important;
+}
+
+/* Remove any accidental red borders applied by host styles to these buttons */
+
+/* Remove any accidental red/accent borders applied by host styles to these buttons */
+#bm-S, #bm-s, #bm-m, #bm-M,
+#bm-button-convert, #bm-button-toggle-output {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background-clip: padding-box !important;
+}
+
+/* Ensure the small icon buttons don't inherit a colored outline on focus */
+#bm-button-convert:focus, #bm-button-toggle-output:focus, #bm-S:focus, #bm-m:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Aggressive override: ensure convert/toggle output buttons never show host accent/red border
+   Apply to default, hover, active, focus, focus-visible and to their inner icon spans. */
+html body #bm-button-convert,
+html body #bm-button-toggle-output,
+html body #bm-button-convert.btn,
+html body #bm-button-toggle-output.btn,
+html body #bm-button-convert .material-symbols-rounded,
+html body #bm-button-toggle-output .material-symbols-rounded {
+  border: 1px solid transparent !important;
+  border-color: transparent !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background-clip: padding-box !important;
+}
+
+html body #bm-button-convert:hover,
+html body #bm-button-toggle-output:hover,
+html body #bm-button-convert:active,
+html body #bm-button-toggle-output:active,
+html body #bm-button-convert:focus,
+html body #bm-button-toggle-output:focus,
+html body #bm-button-convert:focus-visible,
+html body #bm-button-toggle-output:focus-visible {
+  border: 1px solid transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* Also remove any outline styles on inner spans used as icons */
+html body #bm-button-convert .material-symbols-rounded:focus,
+html body #bm-button-toggle-output .material-symbols-rounded:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Explicit overrides for the buttons with IDs used in the client: #bm-m and #bm-S */
+html body #bm-m,
+html body #bm-S,
+html body button#bm-m,
+html body button#bm-S,
+html body #bm-m .material-symbols-rounded,
+html body #bm-S .material-symbols-rounded {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: 0 !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+html body #bm-m:hover, html body #bm-S:hover,
+html body #bm-m:focus, html body #bm-S:focus,
+html body #bm-m:active, html body #bm-S:active,
+html body #bm-m:focus-visible, html body #bm-S:focus-visible {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* Neutralize pseudo-elements and any background-image that might create an accent area */
+html body #bm-m::before, html body #bm-m::after,
+html body #bm-S::before, html body #bm-S::after,
+html body .bm-D#bm-m::before, html body .bm-D#bm-S::before,
+html body .bm-D#bm-m::after, html body .bm-D#bm-S::after {
+  content: none !important;
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  border: 0 !important;
+}
+
+/* Make the manage templates button occupy full modal width without gaps */
+.bm-manage-fullwidth, #bm-manage-templates > .bm-manage-fullwidth {
+  width: 100% !important;
+  display: flex !important;
+  margin: 0 !important;
+  padding-left: 10px !important;
+  padding-right: 10px !important;
+  box-sizing: border-box !important;
+}
+
+#bm-button-manage-templates {
+  cursor: pointer;
+  font-size: 13px !important;
+  padding: 6px 10px !important;
+}
+
+/* Compact color action buttons to avoid horizontal scroll */
+#bm-button-colors-enable-all, #bm-button-colors-disable-all {
+  padding: 3px 6px !important;
+  font-size: 11px !important;
+  height: 34px !important;
+  min-width: 44px !important; /* reasonable minimum */
+  max-width: 120px !important; /* prevent overly wide buttons */
+  flex: 0 1 auto !important; /* allow shrinking in flex containers */
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  box-sizing: border-box !important;
+}
+
+/* Reduce gap between the two color action buttons when space is tight */
+#bm-contain-buttons-template {
+  gap: 0.6ch !important;
+}
+
+/* Make soft action buttons inside color/template containers compact so they fit without scrollbar */
+#bm-contain-buttons-template .btn.btn-soft,
+#bm-contain-colorfilter .btn.btn-soft,
+#bm-manage-templates-panel .btn.btn-soft {
+  padding: 3px 6px !important;
+  font-size: 11px !important;
+  height: 34px !important;
+  min-width: 40px !important;
+  max-width: 110px !important;
+  flex: 0 1 auto !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  box-sizing: border-box !important;
+}
+
+#bm-presets-list {
+  display: block !important;
+  gap: 6px !important;
+  margin-top: 8px !important;
+  /* Ensure the presets container doesn't force a scrollbar */
+  overflow: visible !important;
+  max-height: none !important;
+  padding: 0 !important;
+}
+
+/* Ensure file input and upload button align and don't overflow */
+#bm-input-file-template {
+  display: inline-block !important;
+  max-width: 60% !important;
+}
+
+div:has(> #bm-input-file-template) > button {
+  white-space: nowrap !important;
+}
+
+/* Presets list rows: checkbox + truncated label + trash icon */
+.bm-presets-expanded {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+}
+.bm-preset-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+  padding: 6px 4px !important;
+  border-radius: 6px !important;
+  background: rgba(255,255,255,0.01) !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+}
+.bm-preset-left {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  overflow: hidden !important;
+  min-width: 0 !important; /* allow flex children to shrink and prevent horizontal overflow */
+}
+.bm-preset-toggle {
+  width: 18px !important;
+  height: 18px !important;
+  flex: 0 0 auto !important;
+}
+.bm-preset-label {
+  font-size: 12px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: calc(100% - 96px) !important; /* leave room for delete button */
+  min-width: 0 !important;
+}
+.bm-preset-delete {
+  background: transparent !important;
+  border: none !important;
+  color: var(--bm-foreground) !important;
+  padding: 6px !important;
+  cursor: pointer !important;
+}
+.bm-preset-delete .material-symbols-rounded {
+  font-size: 18px !important;
+  vertical-align: middle !important;
+}
+
+/* Specific adjustments for legacy container #bm-1p (provided HTML) */
+#bm-1p {
+  /* Keep existing visual limit but allow children to wrap */
+  max-height: 220px !important;
+}
+
+/* Ensure the immediate child flex rows can wrap when space is limited */
+#bm-1p > div {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 6px !important;
+  align-items: center !important;
+}
+
+/* Narrow the soft buttons specifically inside #bm-1p so they fit inline */
+#bm-1p .btn.btn-soft {
+  padding: 3px 6px !important;
+  font-size: 11px !important;
+  height: 34px !important;
+  min-width: 40px !important;
+  max-width: 88px !important;
+  flex: 0 1 auto !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  box-sizing: border-box !important;
+}
+
+/* Extra-specific rule to aggressively shrink the pair of color action buttons
+   Use direct-child selector and attribute selectors to raise specificity */
+#bm-1p > div > button.btn.btn-soft[title],
+#bm-1p > div > button.btn.btn-soft:nth-of-type(1),
+#bm-1p > div > button.btn.btn-soft:nth-of-type(2) {
+  padding: 2px 4px !important;
+  font-size: 10px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  max-width: 72px !important;
+  width: auto !important;
+  line-height: 1 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
 }
