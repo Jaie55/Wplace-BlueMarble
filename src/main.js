@@ -1911,9 +1911,9 @@ function buildOverlayMain() {
     const entries = Object.entries(t.colorPalette)
       .sort((a,b) => b[1].count - a[1].count); // sort by frequency desc
 
-    // Determine if top3 mode is active (button toggles it)
-    const top3Btn = document.querySelector('#bm-button-colors-top3');
-    const top3Mode = top3Btn && top3Btn.dataset && top3Btn.dataset.active === '1';
+  // Determine if minimize mode is active (button toggles it)
+  const minBtn = document.querySelector('#bm-button-colors-minimize');
+  const minimizeMode = minBtn && minBtn.dataset && minBtn.dataset.active === '1';
 
     for (const [rgb, meta] of entries) {
       let row = document.createElement('div');
@@ -1986,11 +1986,10 @@ function buildOverlayMain() {
           } catch (_) {}
       });
 
-      row.appendChild(toggle);
-      row.appendChild(swatch);
-      row.appendChild(label);
-      listContainer.appendChild(row);
-
+  row.appendChild(toggle);
+  row.appendChild(swatch);
+  row.appendChild(label);
+  listContainer.appendChild(row);
   // We no longer truncate the DOM list to 3 rows; the compact view is visual only via CSS
     }
   };
@@ -2995,3 +2994,5 @@ function buildOverlayTabTemplate() {
     .buildElement()
   .buildOverlay();
 }
+
+// (duplicate bottom block removed — initial declarations and setup are at the top of the file)
