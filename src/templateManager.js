@@ -284,5 +284,56 @@ export default class TemplateManager {
 
   // Placeholder for OSU import
   parseOSU() {}
+
+  /**
+   * Export a single template (by storageKey) as a compact string that can be imported elsewhere.
+   * The format is a base64-encoded JSON string containing the template entry (name, coords, tiles, palette)
+   * This is intentionally simple and self-contained so users can copy/paste between clients.
+   * @param {string} storageKey
+   * @returns {string|null} base64 string or null on error
+   */
+  exportTemplateAsString(storageKey) {
+    try {
+      if (!storageKey || !this.templatesJSON || !this.templatesJSON.templates) return null;
+      const entry = this.templatesJSON.templates[storageKey];
+      if (!entry) return null;
+      // Build a minimal container preserving schema metadata
+      const payload = { whoami: this.name.replace(/\s+/g, ''), scriptVersion: this.version, schemaVersion: this.templatesVersion, templates: {} };
+      payload.templates[storageKey] = entry;
+      const json = JSON.stringify(payload);
+      // Encode as base64 so the string is safe to copy/paste
+      try { return btoa(unescape(encodeURIComponent(json))); } catch (e) { return btoa(json); }
+    } catch (e) { console.warn('exportTemplateAsString failed', e); return null; }
+  }
+
+  /**
+   * Import a template from a base64 string previously produced by exportTemplateAsString.
+   * Accepts either a raw JSON object, a base64 string, or a raw JSON string.
+   * Returns true on success.
+   */
+  importTemplateFromString(str) {
+    if (!str) return false;
+    try {
+      let obj = null;
+      // If looks like base64 (only base64 chars and no whitespace), try decode
+      const maybeBase64 = typeof str === 'string' && /^[A-Za-z0-9+/=\s]+$/.test(str.trim());
+      if (maybeBase64) {
+        try {
+          const decoded = atob(str.trim());
+          try { obj = JSON.parse(decodeURIComponent(escape(decoded))); } catch (_) { obj = JSON.parse(decoded); }
+        } catch (e) { /* not base64 */ }
+      }
+      if (!obj) {
+        if (typeof str === 'object') obj = str;
+        else obj = JSON.parse(str);
+      }
+      if (!obj) return false;
+      // Delegate to existing importer which normalizes/migrates shapes
+      this.importJSON(obj);
+      // Persist to storage after import
+      try { this.storeTemplates(); } catch (_) {}
+      return true;
+    } catch (e) { console.warn('importTemplateFromString failed', e); return false; }
+  }
 }
 

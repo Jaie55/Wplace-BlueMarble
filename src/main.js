@@ -5,6 +5,7 @@ import Observers from "./observers.js";
 import TemplateManager from "./templateManager.js";
 import ApiManager from "./apiManager.js";
 import { consoleLog, selectAllCoordinateInputs } from "./utils.js";
+import { startTranslator } from './translator.js';
 
 // Imports the CSS file from dist folder on github
 const cssOverlay = GM_getResourceText("CSS-BM-File");
@@ -66,43 +67,8 @@ _bm_compact_style.textContent = `
 }
 `;
 document.head?.appendChild(_bm_compact_style);
-
-// Hide some top3/minimize icon buttons by default via CSS; removed later when templates exist
-// Note: do NOT hide the `.bm-1k` class (the minimize/maximize toggle) so the button remains visible.
-const _bm_hide_top3_style = document.createElement('style');
-_bm_hide_top3_style.id = 'bm-hide-top3';
-_bm_hide_top3_style.textContent = `
-.bm-top3-icon, #bm-button-colors-top3, #bm-V {
-  display: none !important;
-  visibility: hidden !important;
-}
-/* Hide empty container inside the color list to avoid an empty padded box */
-#bm-9 > div:empty {
-  display: none !important;
-  visibility: hidden !important;
-}
-`;
-document.head?.appendChild(_bm_hide_top3_style);
-
-// Force the bm-W button to always be visible and sized like other header action buttons.
-// This ensures the arrow_drop_down is present even when no templates exist.
-const _bm_force_w_style = document.createElement('style');
-_bm_force_w_style.id = 'bm-force-w';
-_bm_force_w_style.textContent = `
-/* Always show the top3/minimize icon (bm-W) and make it consistent with other header buttons */
-#bm-W, #bm-k #bm-W, .bm-1q #bm-W {
-  display: flex !important;
-  visibility: visible !important;
-  align-items: center !important;
-  justify-content: center !important;
-  width: 36px !important;
-  height: 36px !important;
-  min-width: 36px !important;
-  padding: 4px !important;
-  box-sizing: border-box !important;
-}
-`;
-document.head?.appendChild(_bm_force_w_style);
+// Start translator after compact style is in place
+try { startTranslator(); } catch(_) {}
 
 // Script metadata (fallbacks for bundling/runtime where metadata file isn't executed)
 const name = 'Black Marble';
@@ -2952,7 +2918,41 @@ setTimeout(() => { try { createTemplateEditModal(); } catch (_) {} }, 200);
         try { const icon = selectBtn.querySelector('.material-symbols-rounded'); if (icon) { icon.textContent = 'radio_button_checked'; icon.style.setProperty('color', '#0078d7', 'important'); } } catch(_){}
       }
 
-  // Only a single delete icon is shown per template row (no 'Ocultar' / 'Abrir' buttons)
+      // Insert Export/Import UI at top of list (one-time per rebuild)
+      try {
+        let importRow = document.querySelector('#bm-presets-import-row');
+        if (!importRow) {
+          importRow = document.createElement('div'); importRow.id = 'bm-presets-import-row'; importRow.style.display = 'flex'; importRow.style.gap = '6px'; importRow.style.marginBottom = '8px'; importRow.style.alignItems = 'center';
+          const importInput = document.createElement('input'); importInput.type = 'text'; importInput.id = 'bm-template-import-input'; importInput.placeholder = 'Pegar cadena de plantilla aquí'; importInput.style.flex = '1'; importInput.style.minWidth = '120px';
+          const importBtn = document.createElement('button'); importBtn.className = 'btn btn-soft'; importBtn.textContent = 'Importar';
+          try {
+            // Make the import button match the upload/confirm sizing (shared width, 40px height)
+            importBtn.style.setProperty('display', 'inline-flex', 'important');
+            importBtn.style.setProperty('visibility', 'visible', 'important');
+            importBtn.style.setProperty('flex', '1 1 0', 'important');
+            importBtn.style.setProperty('min-width', '0', 'important');
+            importBtn.style.setProperty('box-sizing', 'border-box', 'important');
+            importBtn.style.setProperty('padding', '6px 12px', 'important');
+            importBtn.style.setProperty('font-size', '12px', 'important');
+            importBtn.style.setProperty('height', '40px', 'important');
+            importBtn.style.setProperty('align-items', 'center', 'important');
+            importBtn.style.setProperty('justify-content', 'center', 'important');
+          } catch(_) {}
+          importBtn.addEventListener('click', async () => {
+            const val = document.getElementById('bm-template-import-input')?.value?.trim();
+            if (!val) { overlayMain.handleDisplayError('Cadena de importación vacía'); return; }
+            try {
+              const ok = templateManager.importTemplateFromString(val);
+              if (ok) { overlayMain.handleDisplayStatus('Plantilla importada correctamente'); window.postMessage({ source: 'blue-marble', bmEvent: 'bm-rebuild-template-list' }, '*'); }
+              else overlayMain.handleDisplayError('Importación fallida');
+            } catch (e) { overlayMain.handleDisplayError('Importación fallida'); }
+          });
+          importRow.appendChild(importInput); importRow.appendChild(importBtn);
+          listContainer.parentElement?.insertBefore(importRow, listContainer);
+        }
+      } catch(_) {}
+
+      // Only a single delete icon is shown per template row (no 'Ocultar' / 'Abrir' buttons)
   const del = document.createElement('button');
   // Use soft button style so size matches the select button and host CSS doesn't force a large danger button
   del.className = 'btn btn-soft bm-preset-delete';
@@ -2973,7 +2973,26 @@ setTimeout(() => { try { createTemplateEditModal(); } catch (_) {} }, 200);
   } catch(_){}
 
   right.appendChild(selectBtn);
+  // Add export button next to delete
+  const exp = document.createElement('button');
+  exp.className = 'btn btn-soft bm-preset-export';
+  exp.title = 'Exportar plantilla';
+  exp.innerHTML = '<span class="material-symbols-rounded">export_notes</span>';
+  try {
+    exp.style.setProperty('display','inline-flex','important');
+    exp.style.setProperty('flex','0 0 auto','important');
+    exp.style.setProperty('width','auto','important');
+    exp.style.setProperty('max-width','40px','important');
+    exp.style.setProperty('min-width','34px','important');
+    exp.style.setProperty('height','30px','important');
+    exp.style.setProperty('padding','4px','important');
+    exp.style.setProperty('margin','0','important');
+    exp.style.setProperty('box-sizing','border-box','important');
+    exp.style.setProperty('margin-left','6px','important');
+  } catch(_){}
+  right.appendChild(selectBtn);
   right.appendChild(del);
+  right.appendChild(exp);
 
   row.appendChild(right);
       del.addEventListener('click', async () => {
@@ -2982,6 +3001,17 @@ setTimeout(() => { try { createTemplateEditModal(); } catch (_) {} }, 200);
           await templateManager.deleteTemplate(t.storageKey);
           overlayMain.handleDisplayStatus(`Plantilla eliminada: ${t.displayName}`);
         } catch (e) { overlayMain.handleDisplayError('Error eliminando plantilla'); }
+      });
+
+      exp.addEventListener('click', async () => {
+        try {
+          const str = templateManager.exportTemplateAsString(t.storageKey);
+          if (!str) { overlayMain.handleDisplayError('Error exportando plantilla'); return; }
+          try { await navigator.clipboard.writeText(str); overlayMain.handleDisplayStatus('Cadena de plantilla copiada al portapapeles'); } catch(_) { 
+            // fallback: show prompt so user can copy
+            window.prompt('Copiar esta cadena y pegar en otro cliente para importar:', str);
+          }
+        } catch (e) { overlayMain.handleDisplayError('Error exportando plantilla'); }
       });
 
   // del is already appended into the 'right' container; do not append twice.
