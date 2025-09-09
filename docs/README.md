@@ -1,3 +1,8 @@
+<p style="margin-bottom:0.5rem;">
+  <a href="https://raw.githubusercontent.com/Jaie55/Wplace-BlueMarble/main/dist/BlueMarble.user.js" target="_blank" rel="noopener noreferrer" style="font-weight:700; color:#0b6cff;">
+    One‑click install via Tampermonkey — Install Blue Marble
+  </a>
+</p>
 <table>
   <tr>
   <td><a href="#black-marble">Black Marble</a></td>
